@@ -13,20 +13,43 @@ CREATE DATABASE IF NOT EXISTS ferreteria_db CHARACTER SET utf8mb4 COLLATE utf8mb
 USE ferreteria_db;
 
 -- ==================== TABLA: USUARIOS ====================
-CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'cashier', 'warehouse') NOT NULL,
-    full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100),
-    phone VARCHAR(20),
-    address VARCHAR(255),
-    active TINYINT(1) DEFAULT 1,
-    last_login DATETIME,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS users (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     username VARCHAR(50) UNIQUE NOT NULL,
+--     password VARCHAR(255) NOT NULL,
+--     role ENUM('admin', 'cashier', 'warehouse') NOT NULL,
+--     full_name VARCHAR(100) NOT NULL,
+--     email VARCHAR(100),
+--     phone VARCHAR(20),
+--     address VARCHAR(255),
+--     active TINYINT(1) DEFAULT 1,
+--     last_login DATETIME,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Creación de la tabla EMPLEADO
+CREATE TABLE EMPLEADO (
+    id_empleado INT AUTO_INCREMENT,
+    nombre_empleado VARCHAR(255) NOT NULL,
+    user_empleado VARCHAR(255) NOT NULL,
+    contrasena VARCHAR(255) NOT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    telefono VARCHAR(20),
+    id_rol INT, 
+    direccion VARCHAR(255),
+    creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    PRIMARY KEY (id_EMPLEADO),
+    FOREIGN KEY (id_rol) REFERENCES ROLES(id_rol)
+);
+
+-- Creación de la tabla ROLES
+CREATE TABLE ROLES (
+    id_rol INT AUTO_INCREMENT,
+    nombre_rol VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id_rol)
+);
 
 -- Insertar usuarios de prueba
 INSERT INTO users (username, password, role, full_name, email, phone) VALUES
