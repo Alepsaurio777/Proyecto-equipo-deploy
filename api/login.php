@@ -31,54 +31,106 @@ if (!isset($data['username']) || !isset($data['password'])) {
     jsonResponse(false, 'Usuario y contraseña son requeridos');
 }
 
-// Sanitizar datos
+// Sanitizar datos (solo usuario); la contraseña se maneja tal cual para permitir símbolos
 $username = sanitizeInput($data['username']);
-$password = sanitizeInput($data['password']);
+$password = $data['password'];
 
 // Conectar a la base de datos
 $conn = getConnection();
 
-// Preparar consulta para evitar inyección SQL
-$stmt = $conn->prepare("SELECT id, username, password, role, full_name, email, phone, address FROM users WHERE username = ? AND active = 1");
+// Preparar consulta para evitar inyección SQL y ajustarse al nuevo esquema (database2.sql)
+$stmt = $conn->prepare(
+    "SELECT 
+        u.id_usuario,
+        u.usuario,
+        u.password_hash,
+        u.email,
+        u.telefono,
+        u.activo,
+        e.id_empleado,
+        e.nombre_completo,
+        e.direccion,
+        e.status AS empleado_status,
+        r.nombre_rol
+    FROM usuario u
+    LEFT JOIN empleado e ON e.id_usuario = u.id_usuario
+    LEFT JOIN roles r ON e.id_rol = r.id_rol
+    WHERE u.usuario = ? AND u.activo = 1
+    LIMIT 1"
+);
 $stmt->bind_param("s", $username);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Verificar si existe el usuario
 if ($result->num_rows === 0) {
     jsonResponse(false, 'Usuario o contraseña incorrectos');
 }
 
 $user = $result->fetch_assoc();
+$stmt->close();
 
-// Verificar contraseña
-// NOTA: En producción, usa password_hash() y password_verify()
-// Por ahora verificamos contraseña en texto plano (solo para desarrollo)
-if ($password !== $user['password']) {
-    // Si usas password_hash en la BD, descomenta esta línea:
-    // if (!password_verify($password, $user['password'])) {
+// Verificar contraseña (compatibilidad con hash y contraseñas sin hash)
+$hashedPassword = $user['password_hash'] ?? '';
+$isValidPassword = false;
+if (!empty($hashedPassword)) {
+    $isValidPassword = password_verify($password, $hashedPassword);
+}
+
+if (!$isValidPassword && $hashedPassword === $password) {
+    $isValidPassword = true;
+}
+
+if (!$isValidPassword) {
     jsonResponse(false, 'Usuario o contraseña incorrectos');
 }
 
-// Iniciar sesión
+// Iniciar sesión PHP
 session_start();
-$_SESSION['user_id'] = $user['id'];
-$_SESSION['username'] = $user['username'];
-$_SESSION['role'] = $user['role'];
+$_SESSION['user_id'] = (int)$user['id_usuario'];
+$_SESSION['username'] = $user['usuario'];
+$_SESSION['role'] = $user['nombre_rol'] ?? '';
 
 // Registrar último acceso
-$updateStmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
-$updateStmt->bind_param("i", $user['id']);
+$updateStmt = $conn->prepare("UPDATE usuario SET ultimo_acceso = NOW() WHERE id_usuario = ?");
+$updateStmt->bind_param("i", $user['id_usuario']);
 $updateStmt->execute();
 $updateStmt->close();
 
-// Respuesta exitosa
-unset($user['password']); // No enviar contraseña al cliente
+// Mapear el nombre del rol a los slugs utilizados en el frontend
+$roleName = $user['nombre_rol'] ?? '';
+$roleSlugMap = [
+    'administrador del sistema' => 'admin',
+    'supervisor de inventario' => 'cashier',
+    'encargado de almacén' => 'warehouse',
+    'cajero' => 'cashier',
+    'vendedor' => 'warehouse'
+];
+$roleSlug = 'admin';
+if (!empty($roleName)) {
+    $roleKey = mb_strtolower(trim($roleName));
+    if (isset($roleSlugMap[$roleKey])) {
+        $roleSlug = $roleSlugMap[$roleKey];
+    } else {
+        $roleSlug = preg_replace('/[^a-z]/', '', strtolower(substr($roleKey, 0, 10))) ?: 'warehouse';
+    }
+}
+
+$userData = [
+    'id' => (int)$user['id_usuario'],
+    'username' => $user['usuario'],
+    'role' => $roleSlug,
+    'role_name' => $roleName ?: 'Sin Rol',
+    'full_name' => $user['nombre_completo'] ?? $user['usuario'],
+    'email' => $user['email'] ?? '',
+    'phone' => $user['telefono'] ?? '',
+    'address' => $user['direccion'] ?? '',
+    'employee_id' => isset($user['id_empleado']) ? (int)$user['id_empleado'] : null
+];
+
+$conn->close();
+
 jsonResponse(true, 'Inicio de sesión exitoso', [
-    'user' => $user,
+    'user' => $userData,
     'session_id' => session_id()
 ]);
-
-$stmt->close();
-$conn->close();
 ?>

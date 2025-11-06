@@ -22,9 +22,7 @@ CREATE TABLE IF NOT EXISTS roles (
 INSERT INTO roles (nombre_rol) VALUES
 ('Administrador del Sistema'),
 ('Supervisor de Inventario'),
-('Encargado de Almacén'),
-('Cajero'),
-('Vendedor');
+('Encargado de Almacén');
 
 -- ==================== TABLA USUARIO ====================
 CREATE TABLE IF NOT EXISTS usuario (
@@ -150,11 +148,6 @@ CREATE TABLE IF NOT EXISTS movimiento_inventario (
     INDEX idx_movimiento_tipo(tipo_movimiento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insertar movimientos de prueba
-INSERT INTO movimiento_inventario (id_producto, id_empleado, tipo_movimiento, cantidad, motivo, status, creado_por) VALUES
-(1, 1, 'entrada', 10, 'Reabastecimiento semanal', 'pendiente', 1),
-(3, 1, 'salida', 5, 'Pedido especial cliente #45', 'pendiente', 1);
-
 -- ==================== TABLA HISTORIAL_PRECIOS ====================
 CREATE TABLE IF NOT EXISTS historial_precios (
     id_historial_precio INT AUTO_INCREMENT PRIMARY KEY,
@@ -167,23 +160,6 @@ CREATE TABLE IF NOT EXISTS historial_precios (
     FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
     INDEX idx_historial_fecha(fecha_cambio)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ==================== TABLA CONFIGURACIÓN ====================
-CREATE TABLE IF NOT EXISTS configuracion (
-    id_config INT AUTO_INCREMENT PRIMARY KEY,
-    clave_config VARCHAR(50) UNIQUE NOT NULL,
-    valor_config VARCHAR(255) NOT NULL,
-    descripcion TEXT,
-    actualizado TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Insertar configuración inicial
-INSERT INTO configuracion (clave_config, valor_config, descripcion) VALUES
-('pin_admin', '1234', 'PIN de recuperación de contraseña de administrador'),
-('nombre_app', 'Ferretería El Tornillo', 'Nombre de la aplicación'),
-('moneda', 'MXN', 'Moneda del sistema'),
-('iva', '16', 'Porcentaje de IVA'),
-('dias_alerta_stock', '7', 'Días para alertar de stock bajo');
 
 -- ==================== VISTAS ====================
 
@@ -371,3 +347,13 @@ INSERT INTO empleado (nombre_completo, id_usuario, id_rol, salario, fecha_contra
 ('Administrador del Sistema', 1, 1, 15000.00, '2022-01-15', 'Av. Principal 123'),
 ('Supervisor de Inventario', 2, 2, 12000.00, '2023-03-20', 'Calle Secundaria 456'),
 ('Encargado de Almacén', 3, 3, 9000.00, '2023-06-10', 'Av. Central 789');
+
+-- Nota: Los movimientos de inventario se crean desde la aplicación web.
+-- No insertar datos de prueba para evitar notificaciones hardcodeadas.
+-- Si necesitas datos de prueba, descomenta las siguientes líneas:
+/*
+INSERT INTO movimiento_inventario (id_producto, id_empleado, tipo_movimiento, cantidad, motivo, status, creado_por) VALUES
+(1, 1, 'entrada', 10, 'Reabastecimiento semanal', 'aprobada', 1),
+(3, 1, 'salida', 5, 'Pedido especial cliente #45', 'aprobada', 1);
+*/
+

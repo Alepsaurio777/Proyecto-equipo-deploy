@@ -1,1207 +1,1735 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ferretería El Tornillo - Sistema de Gestión Integral</title>
     <style>
-        /* ==================== RESET Y VARIABLES CSS ==================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+      /* ==================== RESET Y VARIABLES CSS ==================== */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --primary-light: #3b82f6;
+        --success: #22c55e;
+        --success-dark: #16a34a;
+        --success-light: #dcfce7;
+        --warning: #f59e0b;
+        --warning-dark: #d97706;
+        --warning-light: #fef3c7;
+        --danger: #ef4444;
+        --danger-dark: #dc2626;
+        --danger-light: #fee2e2;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+          0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --border-radius: 8px;
+        --transition: all 0.2s ease-in-out;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--gray-800);
+        background: var(--gray-50);
+        overflow-x: hidden;
+      }
+
+      h1 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        line-height: 2.25rem;
+        margin: 0;
+      }
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 2rem;
+        margin: 0;
+      }
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        line-height: 1.75rem;
+        margin: 0;
+      }
+      p {
+        margin: 0;
+      }
+
+      /* ==================== UTILIDADES ==================== */
+      .hidden {
+        display: none !important;
+      }
+      .text-center {
+        text-align: center;
+      }
+      .text-muted {
+        color: var(--gray-500);
+      }
+      .text-success {
+        color: var(--success);
+      }
+      .text-warning {
+        color: var(--warning);
+      }
+      .text-danger {
+        color: var(--danger);
+      }
+
+      /* ==================== PANTALLA DE LOGIN ==================== */
+      .login-screen {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1rem;
+      }
+
+      .login-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow-xl);
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 420px;
+      }
+
+      .login-logo {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1.5rem;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+      }
+
+      .login-card h1 {
+        font-size: 1.875rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .login-subtitle {
+        color: var(--gray-500);
+        margin-bottom: 2rem;
+        font-size: 0.875rem;
+      }
+
+      /* ==================== FORMULARIOS ==================== */
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+      }
+
+      .form-input,
+      .form-select,
+      .form-textarea {
+        width: 100%;
+        padding: 0.625rem 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--border-radius);
+        font-size: 0.875rem;
+        font-family: inherit;
+        transition: var(--transition);
+        background: white;
+      }
+
+      .form-input:focus,
+      .form-select:focus,
+      .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+
+      .input-with-icon {
+        position: relative;
+      }
+
+      .input-with-icon .form-input {
+        padding-left: 2.5rem;
+      }
+
+      .input-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-400);
+        width: 16px;
+        height: 16px;
+      }
+
+      .form-divider {
+        display: flex;
+        align-items: center;
+        margin: 1.5rem 0 1.25rem 0;
+        color: var(--gray-500);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .form-divider span {
+        padding-right: 0.75rem;
+      }
+
+      .form-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--gray-200);
+      }
+
+      .password-toggle {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gray-400);
+        transition: var(--transition);
+      }
+
+      .password-toggle:hover {
+        color: var(--gray-600);
+      }
+
+      .eye-icon {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* ==================== BOTONES ==================== */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: var(--border-radius);
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        font-family: inherit;
+        white-space: nowrap;
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: var(--primary-dark);
+      }
+
+      .btn-success {
+        background: var(--success);
+        color: white;
+      }
+
+      .btn-success:hover:not(:disabled) {
+        background: var(--success-dark);
+      }
+
+      .btn-danger {
+        background: var(--danger);
+        color: white;
+      }
+
+      .btn-danger:hover:not(:disabled) {
+        background: var(--danger-dark);
+      }
+
+      .btn-outline {
+        background: white;
+        border-color: var(--gray-300);
+        color: var(--gray-700);
+      }
+
+      .btn-outline:hover:not(:disabled) {
+        background: var(--gray-50);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--gray-700);
+      }
+
+      .btn-ghost:hover:not(:disabled) {
+        background: var(--gray-100);
+      }
+
+      .btn-link {
+        background: transparent;
+        border: none;
+        color: var(--primary);
+        padding: 0.5rem;
+        font-size: 0.875rem;
+      }
+
+      .btn-link:hover {
+        text-decoration: underline;
+      }
+
+      .btn-block {
+        width: 100%;
+      }
+
+      .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+      }
+
+      .btn-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+      }
+
+      /* ==================== HEADER ==================== */
+      .app-header {
+        background: var(--primary);
+        color: white;
+        box-shadow: var(--shadow-md);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .header-icon {
+        font-size: 2rem;
+      }
+
+      .header-title h1 {
+        font-size: 1.25rem;
+        margin-bottom: 0.125rem;
+      }
+
+      .header-title p {
+        font-size: 0.875rem;
+        opacity: 0.9;
+      }
+
+      /* ==================== LAYOUT PRINCIPAL ==================== */
+      .main-app {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .main-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      /* ==================== SIDEBAR ==================== */
+      .sidebar {
+        width: 256px;
+        background: white;
+        border-right: 1px solid var(--gray-200);
+        display: flex;
+        flex-direction: column;
+        transition: width 0.3s ease;
+        flex-shrink: 0;
+      }
+
+      .sidebar.collapsed {
+        width: 64px;
+      }
+
+      .sidebar-header {
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .user-info {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        background: var(--gray-100);
+        border-radius: var(--border-radius);
+        transition: var(--transition);
+      }
+
+      .sidebar.collapsed .user-info {
+        display: none;
+      }
+
+      .user-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-900);
+        margin-bottom: 0.125rem;
+      }
+
+      .user-role {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+      }
+
+      .sidebar-nav {
+        flex: 1;
+        padding: 0.5rem;
+        overflow-y: auto;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius);
+        color: var(--gray-700);
+        transition: var(--transition);
+        margin-bottom: 0.25rem;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        width: 100%;
+        text-align: left;
+        font-family: inherit;
+        font-size: 0.875rem;
+        position: relative;
+      }
+
+      .nav-item:hover {
+        background: var(--gray-100);
+      }
+
+      .nav-item.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .nav-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+
+      .nav-text {
+        font-weight: 500;
+      }
+
+      .sidebar.collapsed .nav-text {
+        display: none;
+      }
+
+      .sidebar.collapsed .nav-item {
+        justify-content: center;
+        padding: 0.75rem;
+      }
+
+      .nav-badge {
+        background: var(--danger);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        margin-left: auto;
+      }
+
+      .sidebar.collapsed .nav-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 8px;
+        height: 8px;
+        padding: 0;
+        font-size: 0;
+      }
+
+      .sidebar-footer {
+        padding: 0.5rem;
+        border-top: 1px solid var(--gray-200);
+      }
+
+      /* ==================== CONTENIDO PRINCIPAL ==================== */
+      .main-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background: var(--gray-50);
+      }
+
+      .content-header {
+        margin-bottom: 1.5rem;
+      }
+
+      .content-header h2 {
+        margin-bottom: 0.25rem;
+      }
+
+      .content-header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+      }
+
+      /* ==================== CARDS Y KPIs ==================== */
+      .card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+      }
+
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .kpi-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+      }
+
+      .kpi-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+      }
+
+      .kpi-label {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+        font-weight: 500;
+      }
+
+      .kpi-icon {
+        font-size: 1.25rem;
+      }
+
+      .kpi-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+      }
+
+      .kpi-description {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+      }
+
+      /* ==================== TABS ==================== */
+      .tabs {
+        margin-bottom: 1.5rem;
+      }
+
+      .tab-list {
+        display: flex;
+        border-bottom: 2px solid var(--gray-200);
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+      }
+
+      .tab-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        margin-bottom: -2px;
+        transition: var(--transition);
+        white-space: nowrap;
+        font-family: inherit;
+      }
+
+      .tab-button:hover {
+        color: var(--gray-800);
+      }
+
+      .tab-button.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      /* ==================== TABLAS ==================== */
+      .table-container {
+        overflow-x: auto;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--border-radius);
+        background: white;
+        margin-bottom: 1rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      thead {
+        background: var(--gray-50);
+      }
+
+      th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      td {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid var(--gray-200);
+        font-size: 0.875rem;
+        color: var(--gray-700);
+      }
+
+      tbody tr:hover {
+        background: var(--gray-50);
+      }
+
+      .table-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      /* ==================== BADGES ==================== */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .badge-primary {
+        background: #dbeafe;
+        color: var(--primary);
+      }
+
+      .badge-success {
+        background: var(--success-light);
+        color: var(--success-dark);
+      }
+
+      .badge-warning {
+        background: var(--warning-light);
+        color: var(--warning-dark);
+      }
+
+      .badge-danger {
+        background: var(--danger-light);
+        color: var(--danger-dark);
+      }
+
+      /* ==================== MODALES ==================== */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+      }
+
+      .modal {
+        background: white;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-xl);
+      }
+
+      .modal-sm {
+        max-width: 400px;
+      }
+
+      .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .modal-header h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+      }
+
+      .modal-description {
+        color: var(--gray-600);
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+      }
+
+      .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+      }
+
+      /* ==================== INFO BOXES ==================== */
+      .info-box {
+        background: var(--gray-100);
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.875rem;
+        color: var(--gray-700);
+      }
+
+      .success-box {
+        background: var(--success-light);
+        border: 1px solid #bbf7d0;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.875rem;
+        color: var(--success-dark);
+      }
+
+      /* ==================== TOAST NOTIFICATIONS ==================== */
+      .toast-container {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .toast {
+        background: white;
+        padding: 1rem 1.25rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-lg);
+        min-width: 300px;
+        max-width: 400px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: slideIn 0.3s ease-out;
+        border-left: 4px solid var(--gray-300);
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .toast-success {
+        border-left-color: var(--success);
+      }
+      .toast-error {
+        border-left-color: var(--danger);
+      }
+      .toast-info {
+        border-left-color: var(--primary);
+      }
+
+      .toast-icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+      }
+
+      .toast-message {
+        flex: 1;
+        font-size: 0.875rem;
+        color: var(--gray-700);
+      }
+
+      /* ==================== EMPTY STATE ==================== */
+      .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--gray-500);
+      }
+
+      .empty-state-icon {
+        font-size: 4rem;
+        opacity: 0.5;
+        margin-bottom: 1rem;
+      }
+
+      /* ==================== ICONOS SVG ==================== */
+      .svg-icon {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* ==================== RESPONSIVE ==================== */
+      @media (max-width: 768px) {
+        .kpi-grid {
+          grid-template-columns: 1fr;
         }
 
-        :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --primary-light: #3b82f6;
-            --success: #22c55e;
-            --success-dark: #16a34a;
-            --success-light: #dcfce7;
-            --warning: #f59e0b;
-            --warning-dark: #d97706;
-            --warning-light: #fef3c7;
-            --danger: #ef4444;
-            --danger-dark: #dc2626;
-            --danger-light: #fee2e2;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --border-radius: 8px;
-            --transition: all 0.2s ease-in-out;
+        .sidebar {
+          position: fixed;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          z-index: 200;
+          transform: translateX(-100%);
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--gray-800);
-            background: var(--gray-50);
-            overflow-x: hidden;
+        .sidebar.mobile-open {
+          transform: translateX(0);
         }
 
-        h1 { font-size: 1.875rem; font-weight: 700; line-height: 2.25rem; margin: 0; }
-        h2 { font-size: 1.5rem; font-weight: 700; line-height: 2rem; margin: 0; }
-        h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.75rem; margin: 0; }
-        p { margin: 0; }
-
-        /* ==================== UTILIDADES ==================== */
-        .hidden { display: none !important; }
-        .text-center { text-align: center; }
-        .text-muted { color: var(--gray-500); }
-        .text-success { color: var(--success); }
-        .text-warning { color: var(--warning); }
-        .text-danger { color: var(--danger); }
-
-        /* ==================== PANTALLA DE LOGIN ==================== */
-        .login-screen {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 1rem;
-        }
-
-        .login-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: var(--shadow-xl);
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 420px;
-        }
-
-        .login-logo {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 1.5rem;
-            background: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-        }
-
-        .login-card h1 {
-            font-size: 1.875rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .login-subtitle {
-            color: var(--gray-500);
-            margin-bottom: 2rem;
-            font-size: 0.875rem;
-        }
-
-        /* ==================== FORMULARIOS ==================== */
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--gray-700);
-            margin-bottom: 0.5rem;
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            padding: 0.625rem 0.75rem;
-            border: 1px solid var(--gray-300);
-            border-radius: var(--border-radius);
-            font-size: 0.875rem;
-            font-family: inherit;
-            transition: var(--transition);
-            background: white;
-        }
-
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .input-with-icon {
-            position: relative;
-        }
-
-        .input-with-icon .form-input {
-            padding-left: 2.5rem;
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray-400);
-            width: 16px;
-            height: 16px;
-        }
-
-        /* ==================== BOTONES ==================== */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.625rem 1.25rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            border-radius: var(--border-radius);
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            font-family: inherit;
-            white-space: nowrap;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: var(--primary-dark);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover:not(:disabled) {
-            background: var(--success-dark);
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-danger:hover:not(:disabled) {
-            background: var(--danger-dark);
-        }
-
-        .btn-outline {
-            background: white;
-            border-color: var(--gray-300);
-            color: var(--gray-700);
-        }
-
-        .btn-outline:hover:not(:disabled) {
-            background: var(--gray-50);
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--gray-700);
-        }
-
-        .btn-ghost:hover:not(:disabled) {
-            background: var(--gray-100);
-        }
-
-        .btn-link {
-            background: transparent;
-            border: none;
-            color: var(--primary);
-            padding: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-link:hover {
-            text-decoration: underline;
-        }
-
-        .btn-block {
-            width: 100%;
-        }
-
-        .btn-sm {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.75rem;
-        }
-
-        .btn-icon {
-            width: 2.5rem;
-            height: 2.5rem;
-            padding: 0;
-        }
-
-        /* ==================== HEADER ==================== */
-        .app-header {
-            background: var(--primary);
-            color: white;
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .header-icon {
-            font-size: 2rem;
+        .main-content {
+          padding: 1rem;
         }
 
         .header-title h1 {
-            font-size: 1.25rem;
-            margin-bottom: 0.125rem;
+          font-size: 1rem;
         }
 
         .header-title p {
-            font-size: 0.875rem;
-            opacity: 0.9;
+          font-size: 0.75rem;
         }
-
-        /* ==================== LAYOUT PRINCIPAL ==================== */
-        .main-app {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        .main-layout {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* ==================== SIDEBAR ==================== */
-        .sidebar {
-            width: 256px;
-            background: white;
-            border-right: 1px solid var(--gray-200);
-            display: flex;
-            flex-direction: column;
-            transition: width 0.3s ease;
-            flex-shrink: 0;
-        }
-
-        .sidebar.collapsed {
-            width: 64px;
-        }
-
-        .sidebar-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .user-info {
-            margin-top: 0.75rem;
-            padding: 0.75rem;
-            background: var(--gray-100);
-            border-radius: var(--border-radius);
-            transition: var(--transition);
-        }
-
-        .sidebar.collapsed .user-info {
-            display: none;
-        }
-
-        .user-name {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--gray-900);
-            margin-bottom: 0.125rem;
-        }
-
-        .user-role {
-            font-size: 0.75rem;
-            color: var(--gray-500);
-        }
-
-        .sidebar-nav {
-            flex: 1;
-            padding: 0.5rem;
-            overflow-y: auto;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: var(--border-radius);
-            color: var(--gray-700);
-            transition: var(--transition);
-            margin-bottom: 0.25rem;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-            width: 100%;
-            text-align: left;
-            font-family: inherit;
-            font-size: 0.875rem;
-            position: relative;
-        }
-
-        .nav-item:hover {
-            background: var(--gray-100);
-        }
-
-        .nav-item.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-        }
-
-        .nav-text {
-            font-weight: 500;
-        }
-
-        .sidebar.collapsed .nav-text {
-            display: none;
-        }
-
-        .sidebar.collapsed .nav-item {
-            justify-content: center;
-            padding: 0.75rem;
-        }
-
-        .nav-badge {
-            background: var(--danger);
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.125rem 0.5rem;
-            border-radius: 9999px;
-            margin-left: auto;
-        }
-
-        .sidebar.collapsed .nav-badge {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 8px;
-            height: 8px;
-            padding: 0;
-            font-size: 0;
-        }
-
-        .sidebar-footer {
-            padding: 0.5rem;
-            border-top: 1px solid var(--gray-200);
-        }
-
-        /* ==================== CONTENIDO PRINCIPAL ==================== */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1.5rem;
-            background: var(--gray-50);
-        }
-
-        .content-header {
-            margin-bottom: 1.5rem;
-        }
-
-        .content-header h2 {
-            margin-bottom: 0.25rem;
-        }
-
-        .content-header-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.5rem;
-        }
-
-        /* ==================== CARDS Y KPIs ==================== */
-        .card {
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            padding: 1.5rem;
-        }
-
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .kpi-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-
-        .kpi-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-        }
-
-        .kpi-label {
-            font-size: 0.875rem;
-            color: var(--gray-500);
-            font-weight: 500;
-        }
-
-        .kpi-icon {
-            font-size: 1.25rem;
-        }
-
-        .kpi-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--gray-900);
-            margin-bottom: 0.25rem;
-        }
-
-        .kpi-description {
-            font-size: 0.75rem;
-            color: var(--gray-500);
-        }
-
-        /* ==================== TABS ==================== */
-        .tabs {
-            margin-bottom: 1.5rem;
-        }
-
-        .tab-list {
-            display: flex;
-            border-bottom: 2px solid var(--gray-200);
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            overflow-x: auto;
-        }
-
-        .tab-button {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: var(--gray-600);
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-bottom: -2px;
-            transition: var(--transition);
-            white-space: nowrap;
-            font-family: inherit;
-        }
-
-        .tab-button:hover {
-            color: var(--gray-800);
-        }
-
-        .tab-button.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* ==================== TABLAS ==================== */
-        .table-container {
-            overflow-x: auto;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            background: white;
-            margin-bottom: 1rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: var(--gray-50);
-        }
-
-        th {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--gray-700);
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        td {
-            padding: 0.75rem 1rem;
-            border-top: 1px solid var(--gray-200);
-            font-size: 0.875rem;
-            color: var(--gray-700);
-        }
-
-        tbody tr:hover {
-            background: var(--gray-50);
-        }
-
-        .table-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        /* ==================== BADGES ==================== */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .badge-primary {
-            background: #dbeafe;
-            color: var(--primary);
-        }
-
-        .badge-success {
-            background: var(--success-light);
-            color: var(--success-dark);
-        }
-
-        .badge-warning {
-            background: var(--warning-light);
-            color: var(--warning-dark);
-        }
-
-        .badge-danger {
-            background: var(--danger-light);
-            color: var(--danger-dark);
-        }
-
-        /* ==================== MODALES ==================== */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 1rem;
-        }
-
-        .modal {
-            background: white;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-xl);
-        }
-
-        .modal-sm {
-            max-width: 400px;
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .modal-header h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .modal-description {
-            color: var(--gray-600);
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-        }
-
-        .modal-footer {
-            padding: 1.5rem;
-            border-top: 1px solid var(--gray-200);
-            display: flex;
-            gap: 0.5rem;
-            justify-content: flex-end;
-        }
-
-        /* ==================== INFO BOXES ==================== */
-        .info-box {
-            background: var(--gray-100);
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 0.875rem;
-            color: var(--gray-700);
-        }
-
-        .success-box {
-            background: var(--success-light);
-            border: 1px solid #bbf7d0;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 0.875rem;
-            color: var(--success-dark);
-        }
-
-        /* ==================== TOAST NOTIFICATIONS ==================== */
-        .toast-container {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .toast {
-            background: white;
-            padding: 1rem 1.25rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-lg);
-            min-width: 300px;
-            max-width: 400px;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            animation: slideIn 0.3s ease-out;
-            border-left: 4px solid var(--gray-300);
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .toast-success { border-left-color: var(--success); }
-        .toast-error { border-left-color: var(--danger); }
-        .toast-info { border-left-color: var(--primary); }
-
-        .toast-icon {
-            font-size: 1.25rem;
-            flex-shrink: 0;
-        }
-
-        .toast-message {
-            flex: 1;
-            font-size: 0.875rem;
-            color: var(--gray-700);
-        }
-
-        /* ==================== EMPTY STATE ==================== */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--gray-500);
-        }
-
-        .empty-state-icon {
-            font-size: 4rem;
-            opacity: 0.5;
-            margin-bottom: 1rem;
-        }
-
-        /* ==================== ICONOS SVG ==================== */
-        .svg-icon {
-            width: 20px;
-            height: 20px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        /* ==================== RESPONSIVE ==================== */
-        @media (max-width: 768px) {
-            .kpi-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar {
-                position: fixed;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                z-index: 200;
-                transform: translateX(-100%);
-            }
-
-            .sidebar.mobile-open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
-
-            .header-title h1 {
-                font-size: 1rem;
-            }
-
-            .header-title p {
-                font-size: 0.75rem;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- ==================== PANTALLA DE LOGIN ==================== -->
     <div id="loginScreen" class="login-screen">
-        <div class="login-card">
-            <div class="text-center">
-                <div class="login-logo">🏪</div>
-                <h1>Ferretería El Tornillo</h1>
-                <p class="login-subtitle">Sistema de Gestión Integral</p>
-            </div>
-
-            <form id="loginForm">
-                <div class="form-group">
-                    <label class="form-label">Usuario</label>
-                    <div class="input-with-icon">
-                        <svg class="input-icon svg-icon" viewBox="0 0 24 24">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <input type="text" id="loginUsername" class="form-input" placeholder="Ingresa tu usuario" required autocomplete="username">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Contraseña</label>
-                    <div class="input-with-icon">
-                        <svg class="input-icon svg-icon" viewBox="0 0 24 24">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
-                        <input type="password" id="loginPassword" class="form-input" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
-
-                <div class="text-center" style="margin-top: 1rem;">
-                    <button type="button" class="btn-link" onclick="showPasswordRecovery()">
-                        Olvidé mi contraseña
-                    </button>
-                </div>
-            </form>
+      <div class="login-card">
+        <div class="text-center">
+          <div class="login-logo">🏪</div>
+          <h1>Ferretería El Tornillo</h1>
+          <p class="login-subtitle">Sistema de Gestión Integral</p>
         </div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label">Usuario</label>
+            <div class="input-with-icon">
+              <svg class="input-icon svg-icon" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <input
+                type="text"
+                id="loginUsername"
+                class="form-input"
+                placeholder="Ingresa tu usuario"
+                required
+                autocomplete="username"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Contraseña</label>
+            <div class="input-with-icon">
+              <svg class="input-icon svg-icon" viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input
+                type="password"
+                id="loginPassword"
+                class="form-input"
+                placeholder="Ingresa tu contraseña"
+                required
+                autocomplete="current-password"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            Iniciar Sesión
+          </button>
+
+          <div class="text-center" style="margin-top: 1rem">
+            <button
+              type="button"
+              class="btn-link"
+              onclick="showPasswordRecovery()"
+            >
+              Olvidé mi contraseña
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- ==================== APLICACIÓN PRINCIPAL ==================== -->
     <div id="mainApp" class="main-app hidden">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-content">
-                <div class="header-icon">🏪</div>
-                <div class="header-title">
-                    <h1>Ferretería El Tornillo</h1>
-                    <p>Sistema de Gestión de Inventario</p>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Layout -->
-        <div class="main-layout">
-            <!-- Sidebar -->
-            <aside id="sidebar" class="sidebar">
-                <div class="sidebar-header">
-                    <button class="btn btn-ghost btn-icon" onclick="toggleSidebar()">
-                        <svg class="svg-icon" viewBox="0 0 24 24">
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                    </button>
-                    <div class="user-info">
-                        <p class="user-name" id="userName"></p>
-                        <p class="user-role" id="userRole"></p>
-                    </div>
-                </div>
-
-                <nav class="sidebar-nav" id="sidebarNav"></nav>
-
-                <div class="sidebar-footer">
-                    <button class="nav-item" id="editProfileBtn" onclick="showEditProfile()">
-                        <svg class="nav-icon svg-icon" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M12 1v6m0 6v6"></path>
-                        </svg>
-                        <span class="nav-text">Editar Perfil</span>
-                    </button>
-                    <button class="nav-item" onclick="showLogoutDialog()">
-                        <svg class="nav-icon svg-icon" viewBox="0 0 24 24">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                        <span class="nav-text">Cerrar Sesión</span>
-                    </button>
-                </div>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="main-content" id="mainContent"></main>
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-content">
+          <div class="header-icon">🏪</div>
+          <div class="header-title">
+            <h1>Ferretería El Tornillo</h1>
+            <p>Sistema de Gestión de Inventario</p>
+          </div>
         </div>
+      </header>
+
+      <!-- Main Layout -->
+      <div class="main-layout">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+          <div class="sidebar-header">
+            <button class="btn btn-ghost btn-icon" onclick="toggleSidebar()">
+              <svg class="svg-icon" viewBox="0 0 24 24">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+            <div class="user-info">
+              <p class="user-name" id="userName"></p>
+              <p class="user-role" id="userRole"></p>
+            </div>
+          </div>
+
+          <nav class="sidebar-nav" id="sidebarNav"></nav>
+
+          <div class="sidebar-footer">
+            <button
+              class="nav-item"
+              id="editProfileBtn"
+              onclick="showEditProfile()"
+            >
+              <svg class="nav-icon svg-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v6m0 6v6"></path>
+              </svg>
+              <span class="nav-text">Editar Perfil</span>
+            </button>
+            <button class="nav-item" onclick="showLogoutDialog()">
+              <svg class="nav-icon svg-icon" viewBox="0 0 24 24">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span class="nav-text">Cerrar Sesión</span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent"></main>
+      </div>
     </div>
 
     <!-- ==================== MODAL: RECUPERACIÓN DE CONTRASEÑA ==================== -->
     <div id="passwordRecoveryModal" class="modal-overlay hidden">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="recoveryModalTitle">
-                    <svg class="svg-icon" viewBox="0 0 24 24">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    </svg>
-                    Validación de Seguridad
-                </h3>
-            </div>
-            <div class="modal-body">
-                <!-- Paso 1: PIN -->
-                <div id="pinStep">
-                    <p class="modal-description">Para continuar con el cambio de contraseña, ingresa el PIN de seguridad del Administrador.</p>
-                    
-                    <div class="form-group">
-                        <label class="form-label">PIN de Seguridad del Administrador *</label>
-                        <div class="input-with-icon">
-                            <svg class="input-icon svg-icon" viewBox="0 0 24 24">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                            <input type="password" id="adminPin" class="form-input" placeholder="Ingresa el PIN">
-                        </div>
-                    </div>
-
-                    <div class="info-box">
-                        <svg class="svg-icon" viewBox="0 0 24 24">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                        </svg>
-                        <span>Este PIN lo proporciona el Administrador del Sistema</span>
-                    </div>
-                </div>
-
-                <!-- Paso 2: Cambiar Contraseña -->
-                <div id="passwordStep" class="hidden">
-                    <p class="modal-description">Ingresa tu usuario y tu nueva contraseña. Asegúrate de recordarla.</p>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Usuario *</label>
-                        <input type="text" id="recoveryUsername" class="form-input" placeholder="Ingresa tu nombre de usuario">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Nueva Contraseña *</label>
-                        <div class="input-with-icon">
-                            <svg class="input-icon svg-icon" viewBox="0 0 24 24">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                            <input type="password" id="newPassword" class="form-input" placeholder="Mínimo 6 caracteres">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Confirmar Nueva Contraseña *</label>
-                        <div class="input-with-icon">
-                            <svg class="input-icon svg-icon" viewBox="0 0 24 24">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                            <input type="password" id="confirmPassword" class="form-input" placeholder="Repite la contraseña">
-                        </div>
-                    </div>
-
-                    <div class="success-box">
-                        <svg class="svg-icon" viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>✓ PIN validado correctamente</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closePasswordRecovery()">Cancelar</button>
-                <button class="btn btn-primary" id="recoveryActionBtn" onclick="handleRecoveryAction()">Validar PIN</button>
-            </div>
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="recoveryModalTitle">
+            <svg class="svg-icon" viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            Recuperar Contraseña
+          </h3>
         </div>
+        <div class="modal-body">
+          <!-- Paso 1: PIN -->
+          <div id="pinStep">
+            <p class="modal-description">
+              Para continuar con el cambio de contraseña, ingresa el PIN de
+              seguridad del Administrador.
+            </p>
+
+            <div class="form-group">
+              <label class="form-label"
+                >PIN de Seguridad del Administrador *</label
+              >
+              <div class="input-with-icon">
+                <svg class="input-icon svg-icon" viewBox="0 0 24 24">
+                  <rect
+                    x="3"
+                    y="11"
+                    width="18"
+                    height="11"
+                    rx="2"
+                    ry="2"
+                  ></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input
+                  type="password"
+                  id="adminPin"
+                  class="form-input"
+                  placeholder="Ingresa el PIN"
+                />
+              </div>
+            </div>
+
+            <div class="info-box">
+              <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Este PIN lo proporciona el Administrador del Sistema</span>
+            </div>
+          </div>
+
+          <!-- Paso 1: Solicitar Código por Email -->
+          <div id="emailCodeStep" class="hidden">
+            <p class="modal-description">
+              Ingresa tu nombre de usuario. Te enviaremos un código de
+              verificación a tu email registrado.
+            </p>
+
+            <div class="form-group">
+              <label class="form-label">Usuario *</label>
+              <input
+                type="text"
+                id="recoveryEmailUsername"
+                class="form-input"
+                placeholder="Ingresa tu nombre de usuario"
+              />
+            </div>
+
+            <div class="info-box">
+              <svg class="svg-icon" viewBox="0 0 24 24">
+                <path
+                  d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                ></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <span
+                >Enviaremos un código de 6 dígitos a tu email registrado. El
+                código expira en 10 minutos.</span
+              >
+            </div>
+          </div>
+
+          <!-- Paso 2: Verificar Código -->
+          <div id="verifyCodeStep" class="hidden">
+            <p class="modal-description">
+              Revisa tu correo electrónico. Te hemos enviado un código de
+              verificación.
+            </p>
+
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input
+                type="text"
+                id="emailHint"
+                class="form-input"
+                readonly
+                disabled
+                style="background: var(--gray-100)"
+              />
+              <small class="text-muted">Código enviado a este email</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Código de Verificación *</label>
+              <input
+                type="text"
+                id="verificationCode"
+                class="form-input"
+                placeholder="000000"
+                maxlength="6"
+                autocomplete="off"
+                style="
+                  font-size: 24px;
+                  letter-spacing: 8px;
+                  text-align: center;
+                  font-weight: bold;
+                "
+              />
+              <small class="text-muted"
+                >Ingresa el código de 6 dígitos que recibiste por email</small
+              >
+            </div>
+
+            <div class="info-box">
+              <svg class="svg-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="8.01"></line>
+                <line x1="12" y1="12" x2="12" y2="16"></line>
+              </svg>
+              <span
+                >¿No recibiste el código?
+                <a
+                  href="#"
+                  onclick="event.preventDefault(); resendVerificationCode();"
+                  style="color: var(--primary); text-decoration: underline"
+                  >Reenviar código</a
+                ></span
+              >
+            </div>
+          </div>
+
+          <!-- Paso 3: Cambiar Contraseña -->
+          <div id="passwordStep" class="hidden">
+            <p class="modal-description">
+              Verificación exitosa. Ahora puedes establecer tu nueva contraseña.
+            </p>
+
+            <div class="form-group">
+              <label class="form-label">Usuario</label>
+              <input
+                type="text"
+                id="recoveryUsername"
+                class="form-input"
+                placeholder="Tu usuario"
+                readonly
+                disabled
+                style="background: var(--gray-100)"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Nueva Contraseña *</label>
+              <div class="input-with-icon">
+                <svg class="input-icon svg-icon" viewBox="0 0 24 24">
+                  <rect
+                    x="3"
+                    y="11"
+                    width="18"
+                    height="11"
+                    rx="2"
+                    ry="2"
+                  ></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input
+                  type="password"
+                  id="newPassword"
+                  class="form-input"
+                  placeholder="Mínimo 6 caracteres"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Confirmar Nueva Contraseña *</label>
+              <div class="input-with-icon">
+                <svg class="input-icon svg-icon" viewBox="0 0 24 24">
+                  <rect
+                    x="3"
+                    y="11"
+                    width="18"
+                    height="11"
+                    rx="2"
+                    ry="2"
+                  ></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  class="form-input"
+                  placeholder="Repite la contraseña"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closePasswordRecovery()">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" id="recoveryActionBtn">
+            Validar PIN
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== MODAL: CONFIRMACIÓN DE LOGOUT ==================== -->
     <div id="logoutDialog" class="modal-overlay hidden">
-        <div class="modal modal-sm">
-            <div class="modal-header">
-                <h3>¿Cerrar sesión?</h3>
-            </div>
-            <div class="modal-body">
-                <p>¿Estás seguro que deseas cerrar sesión? Tendrás que iniciar sesión nuevamente para acceder al sistema.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeLogoutDialog()">Cancelar</button>
-                <button class="btn btn-danger" onclick="confirmLogout()">Sí, cerrar sesión</button>
-            </div>
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <h3>¿Cerrar sesión?</h3>
         </div>
+        <div class="modal-body">
+          <p>
+            ¿Estás seguro que deseas cerrar sesión? Tendrás que iniciar sesión
+            nuevamente para acceder al sistema.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeLogoutDialog()">
+            Cancelar
+          </button>
+          <button class="btn btn-danger" onclick="confirmLogout()">
+            Sí, cerrar sesión
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== MODAL: EDITAR PERFIL ==================== -->
     <div id="editProfileModal" class="modal-overlay hidden">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>Editar Perfil</h3>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Nombre Completo *</label>
-                    <input type="text" id="profileName" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="profileEmail" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Teléfono</label>
-                    <input type="tel" id="profilePhone" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Dirección</label>
-                    <input type="text" id="profileAddress" class="form-input">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeEditProfile()">Cancelar</button>
-                <button class="btn btn-primary" onclick="saveProfile()">Guardar Cambios</button>
-            </div>
+      <div class="modal">
+        <div class="modal-header">
+          <h3>✏️ Editar Mi Perfil</h3>
+          <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.875rem">
+            Actualiza tu información personal
+          </p>
         </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">
+              Nombre Completo <span style="color: var(--danger)">*</span>
+            </label>
+            <input
+              type="text"
+              id="profileName"
+              class="form-input"
+              autocomplete="name"
+              placeholder="Ej: Juan Pérez García"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo Electrónico</label>
+            <input
+              type="email"
+              id="profileEmail"
+              class="form-input"
+              autocomplete="email"
+              placeholder="tu-email@ejemplo.com"
+            />
+            <small class="text-muted">Para notificaciones del sistema</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input
+              type="tel"
+              id="profilePhone"
+              class="form-input"
+              autocomplete="tel"
+              placeholder="Ej: 555-1234-5678"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dirección</label>
+            <input
+              type="text"
+              id="profileAddress"
+              class="form-input"
+              autocomplete="street-address"
+              placeholder="Calle, Número, Colonia, Ciudad"
+            />
+          </div>
+          <hr
+            style="
+              margin: 1.5rem 0;
+              border: none;
+              border-top: 1px solid var(--border);
+            "
+          />
+          <div style="text-align: center">
+            <button
+              type="button"
+              class="btn btn-outline"
+              onclick="showChangePasswordModal()"
+            >
+              🔒 Cambiar Contraseña
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeEditProfile()">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" onclick="saveProfile()">
+            Guardar Cambios
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== MODAL: CAMBIAR CONTRASEÑA ==================== -->
+    <div id="changePasswordModal" class="modal-overlay hidden">
+      <div class="modal" style="max-width: 400px">
+        <div class="modal-header">
+          <h3>🔒 Cambiar Contraseña</h3>
+        </div>
+        <div class="modal-body">
+          <form id="changePasswordForm">
+            <div class="form-group">
+              <label class="form-label">Contraseña Actual *</label>
+              <div class="input-with-icon">
+                <input
+                  type="password"
+                  id="changeCurrentPassword"
+                  class="form-input"
+                  required
+                  autocomplete="current-password"
+                  style="padding-right: 2.5rem"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  onclick="togglePasswordVisibility('changeCurrentPassword')"
+                  title="Mostrar/Ocultar contraseña"
+                >
+                  <svg class="eye-icon" viewBox="0 0 24 24">
+                    <path
+                      d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                    ></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nueva Contraseña *</label>
+              <div class="input-with-icon">
+                <input
+                  type="password"
+                  id="changeNewPassword"
+                  class="form-input"
+                  required
+                  minlength="6"
+                  autocomplete="new-password"
+                  style="padding-right: 2.5rem"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  onclick="togglePasswordVisibility('changeNewPassword')"
+                  title="Mostrar/Ocultar contraseña"
+                >
+                  <svg class="eye-icon" viewBox="0 0 24 24">
+                    <path
+                      d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                    ></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+              <small class="text-muted">Mínimo 6 caracteres</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirmar Nueva Contraseña *</label>
+              <div class="input-with-icon">
+                <input
+                  type="password"
+                  id="changeConfirmPassword"
+                  class="form-input"
+                  required
+                  minlength="6"
+                  autocomplete="new-password"
+                  style="padding-right: 2.5rem"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  onclick="togglePasswordVisibility('changeConfirmPassword')"
+                  title="Mostrar/Ocultar contraseña"
+                >
+                  <svg class="eye-icon" viewBox="0 0 24 24">
+                    <path
+                      d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                    ></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeChangePasswordModal()">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" onclick="saveNewPassword()">
+            Cambiar Contraseña
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== MODAL: PRODUCTO ==================== -->
     <div id="productModal" class="modal-overlay hidden">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="productModalTitle">Nuevo Producto</h3>
-            </div>
-            <div class="modal-body">
-                <form id="productForm">
-                    <div class="form-group">
-                        <label class="form-label">Nombre del Producto *</label>
-                        <input type="text" id="productName" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Código *</label>
-                        <input type="text" id="productCode" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Categoría *</label>
-                        <select id="productCategory" class="form-select" required>
-                            <option value="">Selecciona una categoría</option>
-                            <option value="Herramientas">Herramientas</option>
-                            <option value="Construcción">Construcción</option>
-                            <option value="Electricidad">Electricidad</option>
-                            <option value="Plomería">Plomería</option>
-                            <option value="Pintura">Pintura</option>
-                            <option value="Seguridad">Seguridad</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Stock Actual</label>
-                        <input type="number" id="productStock" class="form-input" value="0" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Stock Mínimo</label>
-                        <input type="number" id="productMinStock" class="form-input" value="0" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Stock Máximo</label>
-                        <input type="number" id="productMaxStock" class="form-input" value="100" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Precio</label>
-                        <input type="number" id="productPrice" class="form-input" value="0" min="0" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ubicación</label>
-                        <input type="text" id="productLocation" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Descripción</label>
-                        <textarea id="productDescription" class="form-textarea"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button id="closeProductModalBtn" class="btn btn-outline">Cancelar</button>
-                <button id="saveProductBtn" class="btn btn-primary">Guardar</button>
-            </div>
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="productModalTitle">Nuevo Producto</h3>
         </div>
+        <div class="modal-body">
+          <form id="productForm">
+            <div class="form-group">
+              <label class="form-label">Nombre del Producto *</label>
+              <input type="text" id="productName" class="form-input" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Código *</label>
+              <input type="text" id="productCode" class="form-input" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Categoría *</label>
+              <select id="productCategory" class="form-select" required>
+                <option value="">Selecciona una categoría</option>
+                <option value="Herramientas">Herramientas</option>
+                <option value="Construcción">Construcción</option>
+                <option value="Electricidad">Electricidad</option>
+                <option value="Plomería">Plomería</option>
+                <option value="Pintura">Pintura</option>
+                <option value="Seguridad">Seguridad</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Stock Actual</label>
+              <input
+                type="number"
+                id="productStock"
+                class="form-input"
+                value="0"
+                min="0"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Stock Mínimo</label>
+              <input
+                type="number"
+                id="productMinStock"
+                class="form-input"
+                value="0"
+                min="0"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Stock Máximo</label>
+              <input
+                type="number"
+                id="productMaxStock"
+                class="form-input"
+                value="100"
+                min="0"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Precio</label>
+              <input
+                type="number"
+                id="productPrice"
+                class="form-input"
+                value="0"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ubicación</label>
+              <input type="text" id="productLocation" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descripción</label>
+              <textarea
+                id="productDescription"
+                class="form-textarea"
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button id="closeProductModalBtn" class="btn btn-outline">
+            Cancelar
+          </button>
+          <button id="saveProductBtn" class="btn btn-primary">Guardar</button>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== MODAL: TRANSACCIÓN ==================== -->
     <div id="transactionModal" class="modal-overlay hidden">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="transactionModalTitle">Registrar Movimiento</h3>
-            </div>
-            <div class="modal-body">
-                <form id="transactionForm">
-                    <div class="form-group">
-                        <label class="form-label">Tipo de Movimiento *</label>
-                        <select id="transactionType" class="form-select" required>
-                            <option value="entrada">Entrada</option>
-                            <option value="salida">Salida</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Producto *</label>
-                        <select id="transactionProduct" class="form-select" required>
-                            <option value="">Selecciona un producto</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Cantidad *</label>
-                        <input type="number" id="transactionQuantity" class="form-input" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Motivo</label>
-                        <textarea id="transactionReason" class="form-textarea" placeholder="Describe el motivo del movimiento"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button id="closeTransactionModalBtn" class="btn btn-outline">Cancelar</button>
-                <button id="saveTransactionBtn" class="btn btn-primary">Guardar</button>
-            </div>
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="transactionModalTitle">Registrar Movimiento</h3>
         </div>
+        <div class="modal-body">
+          <form id="transactionForm">
+            <div class="form-group">
+              <label class="form-label">Tipo de Movimiento *</label>
+              <select id="transactionType" class="form-select" required>
+                <option value="entrada">Entrada</option>
+                <option value="salida">Salida</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Producto *</label>
+              <select id="transactionProduct" class="form-select" required>
+                <option value="">Selecciona un producto</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cantidad *</label>
+              <input
+                type="number"
+                id="transactionQuantity"
+                class="form-input"
+                min="1"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Motivo</label>
+              <textarea
+                id="transactionReason"
+                class="form-textarea"
+                placeholder="Describe el motivo del movimiento"
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button id="closeTransactionModalBtn" class="btn btn-outline">
+            Cancelar
+          </button>
+          <button id="saveTransactionBtn" class="btn btn-primary">
+            Guardar
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== MODAL: EMPLEADO ==================== -->
     <div id="employeeModal" class="modal-overlay hidden">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="employeeModalTitle">Nuevo Empleado</h3>
-            </div>
-            <div class="modal-body">
-                <form id="employeeForm">
-                    <div class="form-group">
-                        <label class="form-label">Nombre Completo *</label>
-                        <input type="text" id="employeeName" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Puesto *</label>
-                        <input type="text" id="employeePosition" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" id="employeeEmail" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Teléfono</label>
-                        <input type="tel" id="employeePhone" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Salario</label>
-                        <input type="number" id="employeeSalary" class="form-input" min="0" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Estado</label>
-                        <select id="employeeStatus" class="form-select">
-                            <option value="active">Activo</option>
-                            <option value="inactive">Inactivo</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Fecha de Contratación</label>
-                        <input type="date" id="employeeHireDate" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Dirección</label>
-                        <input type="text" id="employeeAddress" class="form-input">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeEmployeeModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="saveEmployee()">Guardar</button>
-            </div>
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="employeeModalTitle">Nuevo Empleado</h3>
         </div>
+        <div class="modal-body">
+          <form id="employeeForm">
+            <div class="form-group">
+              <label class="form-label">Nombre Completo *</label>
+              <input
+                type="text"
+                id="employeeName"
+                class="form-input"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Puesto / Rol *</label>
+              <select id="employeePosition" class="form-select" required>
+                <option value="">Cargando roles...</option>
+              </select>
+              <small class="text-muted"
+                >Este campo determina los permisos del empleado</small
+              >
+            </div>
+
+            <!-- Credenciales de Acceso -->
+            <div class="form-divider">
+              <span>Credenciales de Acceso</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Nombre de Usuario *</label>
+              <input
+                type="text"
+                id="employeeUsername"
+                class="form-input"
+                placeholder="Ingresa el nombre de usuario"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contraseña *</label>
+              <div class="input-with-icon">
+                <input
+                  type="password"
+                  id="employeePassword"
+                  class="form-input"
+                  placeholder="Mínimo 6 caracteres"
+                  minlength="6"
+                  required
+                  style="padding-right: 2.5rem"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  onclick="togglePasswordVisibility('employeePassword')"
+                  title="Mostrar/Ocultar contraseña"
+                >
+                  <svg class="eye-icon" viewBox="0 0 24 24">
+                    <path
+                      d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                    ></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="form-divider">
+              <span>Información de Contacto</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" id="employeeEmail" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Teléfono</label>
+              <input type="tel" id="employeePhone" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Salario</label>
+              <input
+                type="number"
+                id="employeeSalary"
+                class="form-input"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Estado</label>
+              <select id="employeeStatus" class="form-select">
+                <option value="active">Activo</option>
+                <option value="inactive">Inactivo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha de Contratación</label>
+              <input type="date" id="employeeHireDate" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Dirección</label>
+              <input type="text" id="employeeAddress" class="form-input" />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeEmployeeModal()">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" onclick="saveEmployee()">
+            Guardar
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== SCRIPTS MODULARES ==================== -->
     <script src="js/data.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/inventory.js"></script>
     <script src="js/employees.js"></script>
@@ -1209,5 +1737,5 @@
     <script src="js/reports.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
-</body>
+  </body>
 </html>

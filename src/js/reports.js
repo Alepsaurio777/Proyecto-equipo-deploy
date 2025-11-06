@@ -1,15 +1,20 @@
 // ==================== MÓDULO DE REPORTES ====================
 
 function renderReportsModule() {
-    const content = document.getElementById('mainContent');
-    
-    // Calcular KPIs
-    const totalProducts = AppState.products.length;
-    const totalStock = AppState.products.reduce((sum, p) => sum + p.stock, 0);
-    const lowStockProducts = AppState.products.filter(p => p.stock <= p.minStock);
-    const stockValue = AppState.products.reduce((sum, p) => sum + (p.stock * p.price), 0);
-    
-    content.innerHTML = `
+  const content = document.getElementById("mainContent");
+
+  // Calcular KPIs
+  const totalProducts = AppState.products.length;
+  const totalStock = AppState.products.reduce((sum, p) => sum + p.stock, 0);
+  const lowStockProducts = AppState.products.filter(
+    (p) => p.stock <= (p.min_stock || p.minStock || 0)
+  );
+  const stockValue = AppState.products.reduce(
+    (sum, p) => sum + p.stock * p.price,
+    0
+  );
+
+  content.innerHTML = `
         <div class="content-header">
             <h2>Reportes de Inventario</h2>
             <p class="text-muted">Análisis y estadísticas del sistema</p>
@@ -37,7 +42,9 @@ function renderReportsModule() {
                     <span class="kpi-label">Stock Bajo</span>
                     <span class="kpi-icon">⚠️</span>
                 </div>
-                <div class="kpi-value text-warning">${lowStockProducts.length}</div>
+                <div class="kpi-value text-warning">${
+                  lowStockProducts.length
+                }</div>
                 <div class="kpi-description">Requieren reposición</div>
             </div>
             <div class="kpi-card">
@@ -45,7 +52,9 @@ function renderReportsModule() {
                     <span class="kpi-label">Valor Inventario</span>
                     <span class="kpi-icon">💰</span>
                 </div>
-                <div class="kpi-value" style="font-size: 1.5rem;">${formatCurrency(stockValue)}</div>
+                <div class="kpi-value" style="font-size: 1.5rem;">${formatCurrency(
+                  stockValue
+                )}</div>
                 <div class="kpi-description">Valor total del stock</div>
             </div>
         </div>
@@ -76,18 +85,20 @@ function renderReportsModule() {
             </div>
         </div>
     `;
-    
-    setupTabListeners();
+
+  setupTabListeners();
 }
 
 function renderLowStockReport() {
-    const lowStockProducts = AppState.products.filter(p => p.stock <= p.minStock);
-    
-    if (lowStockProducts.length === 0) {
-        return '<div class="empty-state"><div class="empty-state-icon">✓</div><p>No hay productos con stock bajo</p></div>';
-    }
-    
-    let html = `
+  const lowStockProducts = AppState.products.filter(
+    (p) => p.stock <= (p.min_stock || p.minStock || 0)
+  );
+
+  if (lowStockProducts.length === 0) {
+    return '<div class="empty-state"><div class="empty-state-icon">✓</div><p>No hay productos con stock bajo</p></div>';
+  }
+
+  let html = `
         <div class="card">
             <h3 style="margin-bottom: 1rem;">Productos que Requieren Reposición</h3>
             <div class="table-container">
@@ -105,37 +116,45 @@ function renderLowStockReport() {
                     </thead>
                     <tbody>
     `;
-    
-    lowStockProducts.forEach(product => {
-        const deficit = product.minStock - product.stock;
-        
-        html += `
+
+  lowStockProducts.forEach((product) => {
+    const minStock = product.min_stock || product.minStock || 0;
+    const deficit = minStock - product.stock;
+
+    html += `
             <tr>
                 <td><strong>${product.code}</strong></td>
                 <td>${product.name}</td>
-                <td><span class="badge badge-primary">${product.category}</span></td>
+                <td><span class="badge badge-primary">${
+                  product.category
+                }</span></td>
                 <td class="text-danger"><strong>${product.stock}</strong></td>
-                <td>${product.minStock}</td>
-                <td class="text-warning"><strong>${deficit > 0 ? deficit : 0}</strong></td>
+                <td>${minStock}</td>
+                <td class="text-warning"><strong>${
+                  deficit > 0 ? deficit : 0
+                }</strong></td>
                 <td>${product.location}</td>
             </tr>
         `;
-    });
-    
-    html += '</tbody></table></div></div>';
-    return html;
+  });
+
+  html += "</tbody></table></div></div>";
+  return html;
 }
 
 function renderMovementsReport() {
-    const recentTransactions = AppState.transactions
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 20);
-    
-    if (recentTransactions.length === 0) {
-        return '<div class="empty-state"><div class="empty-state-icon">🔄</div><p>No hay movimientos registrados</p></div>';
-    }
-    
-    let html = `
+  const recentTransactions = AppState.transactions
+    .sort(
+      (a, b) =>
+        new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
+    )
+    .slice(0, 20);
+
+  if (recentTransactions.length === 0) {
+    return '<div class="empty-state"><div class="empty-state-icon">🔄</div><p>No hay movimientos registrados</p></div>';
+  }
+
+  let html = `
         <div class="card">
             <h3 style="margin-bottom: 1rem;">Últimos 20 Movimientos</h3>
             <div class="table-container">
@@ -152,44 +171,59 @@ function renderMovementsReport() {
                     </thead>
                     <tbody>
     `;
-    
-    recentTransactions.forEach(transaction => {
-        const typeClass = transaction.type === 'entrada' ? 'badge-success' : 'badge-warning';
-        const statusClass = transaction.status === 'aprobada' ? 'badge-success' : 
-                           transaction.status === 'rechazada' ? 'badge-danger' : 'badge-warning';
-        
-        html += `
+
+  recentTransactions.forEach((transaction) => {
+    const typeClass =
+      transaction.type === "entrada" ? "badge-success" : "badge-warning";
+    const statusClass =
+      transaction.status === "aprobada"
+        ? "badge-success"
+        : transaction.status === "rechazada"
+        ? "badge-danger"
+        : "badge-warning";
+
+    const productName =
+      transaction.product_name || transaction.productName || "";
+    const productCode =
+      transaction.product_code || transaction.productCode || "";
+    const createdBy =
+      transaction.created_by_name || transaction.createdBy || "";
+    const transDate = transaction.created_at || transaction.date;
+
+    html += `
             <tr>
-                <td>${formatDate(transaction.date)}</td>
+                <td>${formatDate(transDate)}</td>
                 <td><span class="badge ${typeClass}">${transaction.type.toUpperCase()}</span></td>
-                <td>${transaction.productName} <small>(${transaction.productCode})</small></td>
+                <td>${productName} <small>(${productCode})</small></td>
                 <td><strong>${transaction.quantity}</strong></td>
-                <td>${transaction.createdBy}</td>
-                <td><span class="badge ${statusClass}">${transaction.status}</span></td>
+                <td>${createdBy}</td>
+                <td><span class="badge ${statusClass}">${
+      transaction.status
+    }</span></td>
             </tr>
         `;
-    });
-    
-    html += '</tbody></table></div></div>';
-    return html;
+  });
+
+  html += "</tbody></table></div></div>";
+  return html;
 }
 
 function renderCategoryReport() {
-    const categoryStats = {};
-    
-    (AppState.categories || []).forEach(category => {
-        const products = AppState.products.filter(p => p.category === category);
-        const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
-        const totalValue = products.reduce((sum, p) => sum + (p.stock * p.price), 0);
-        
-        categoryStats[category] = {
-            products: products.length,
-            stock: totalStock,
-            value: totalValue
-        };
-    });
-    
-    let html = `
+  const categoryStats = {};
+
+  (AppState.categories || []).forEach((category) => {
+    const products = AppState.products.filter((p) => p.category === category);
+    const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
+    const totalValue = products.reduce((sum, p) => sum + p.stock * p.price, 0);
+
+    categoryStats[category] = {
+      products: products.length,
+      stock: totalStock,
+      value: totalValue,
+    };
+  });
+
+  let html = `
         <div class="card">
             <h3 style="margin-bottom: 1rem;">Inventario por Categoría</h3>
             <div class="table-container">
@@ -205,11 +239,11 @@ function renderCategoryReport() {
                     </thead>
                     <tbody>
     `;
-    
-    Object.entries(categoryStats).forEach(([category, stats]) => {
-        const avgValue = stats.products > 0 ? stats.value / stats.products : 0;
-        
-        html += `
+
+  Object.entries(categoryStats).forEach(([category, stats]) => {
+    const avgValue = stats.products > 0 ? stats.value / stats.products : 0;
+
+    html += `
             <tr>
                 <td><span class="badge badge-primary">${category}</span></td>
                 <td><strong>${stats.products}</strong></td>
@@ -218,16 +252,19 @@ function renderCategoryReport() {
                 <td>${formatCurrency(avgValue)}</td>
             </tr>
         `;
-    });
-    
-    // Total
-    const totals = Object.values(categoryStats).reduce((acc, curr) => ({
-        products: acc.products + curr.products,
-        stock: acc.stock + curr.stock,
-        value: acc.value + curr.value
-    }), { products: 0, stock: 0, value: 0 });
-    
-    html += `
+  });
+
+  // Total
+  const totals = Object.values(categoryStats).reduce(
+    (acc, curr) => ({
+      products: acc.products + curr.products,
+      stock: acc.stock + curr.stock,
+      value: acc.value + curr.value,
+    }),
+    { products: 0, stock: 0, value: 0 }
+  );
+
+  html += `
                         <tr style="font-weight: bold; background: var(--gray-50);">
                             <td>TOTAL</td>
                             <td>${totals.products}</td>
@@ -240,6 +277,6 @@ function renderCategoryReport() {
             </div>
         </div>
     `;
-    
-    return html;
+
+  return html;
 }

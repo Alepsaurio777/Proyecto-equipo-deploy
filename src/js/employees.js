@@ -2,108 +2,56 @@
 
 let currentEditingEmployee = null;
 
-// Cargar empleados desde la API
-async function loadEmployees() {
-    try {
-        const response = await fetch('http://localhost/Proyecto-de-Equipo/api/employees.php');
-        const data = await response.json();
-        if (data.success) {
-            AppState.employees = data.data;
-        } else {
-            console.error('Error al cargar empleados:', data.message);
-        }
-    } catch (error) {
-        console.error('Error de red al cargar empleados:', error);
-    }
-}
+// Nota: La carga de empleados ahora se hace desde api.js usando apiLoadEmployees()
 
 // ==================== CRUD DE EMPLEADOS (CONECTADO A BACKEND) ====================
 
 async function createEmployee(employeeData) {
-    try {
-        const response = await fetch('http://localhost/Proyecto-de-Equipo/api/employees.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(employeeData)
-        });
-        const data = await response.json();
-        if (data.success) {
-            await loadEmployees();
-            return true;
-        } else {
-            showToast(data.message, 'error');
-            return false;
-        }
-    } catch (error) {
-        console.error('Error de red al crear empleado:', error);
-        showToast('Error de red al crear empleado', 'error');
-        return false;
-    }
+  const result = await apiCreateEmployee(employeeData);
+  if (!result.success) {
+    showToast(result.message, "error");
+  }
+  return result.success;
 }
 
 function getEmployees(filters = {}) {
-    let filtered = [...AppState.employees];
-    if (filters.status) {
-        filtered = filtered.filter(e => e.status === filters.status);
-    }
-    if (filters.searchTerm && filters.searchTerm !== '') {
-        const term = filters.searchTerm.toLowerCase();
-        filtered = filtered.filter(e => 
-            e.name.toLowerCase().includes(term) || 
-            e.position.toLowerCase().includes(term) ||
-            (e.email && e.email.toLowerCase().includes(term))
-        );
-    }
-    return filtered;
+  let filtered = [...AppState.employees];
+  if (filters.status) {
+    filtered = filtered.filter((e) => e.status === filters.status);
+  }
+  if (filters.searchTerm && filters.searchTerm !== "") {
+    const term = filters.searchTerm.toLowerCase();
+    filtered = filtered.filter(
+      (e) =>
+        e.name.toLowerCase().includes(term) ||
+        e.position.toLowerCase().includes(term) ||
+        (e.email && e.email.toLowerCase().includes(term))
+    );
+  }
+  return filtered;
 }
 
 async function updateEmployee(employeeId, employeeData) {
-    try {
-        const response = await fetch('http://localhost/Proyecto-de-Equipo/api/employees.php', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: employeeId, ...employeeData })
-        });
-        const data = await response.json();
-        if (data.success) {
-            await loadEmployees();
-            return true;
-        } else {
-            showToast(data.message, 'error');
-            return false;
-        }
-    } catch (error) {
-        console.error('Error de red al actualizar empleado:', error);
-        showToast('Error de red al actualizar empleado', 'error');
-        return false;
-    }
+  const result = await apiUpdateEmployee(employeeId, employeeData);
+  if (!result.success) {
+    showToast(result.message, "error");
+  }
+  return result.success;
 }
 
 async function deleteEmployee(employeeId) {
-    try {
-        const response = await fetch(`http://localhost/Proyecto-de-Equipo/api/employees.php?id=${employeeId}`, {
-            method: 'DELETE'
-        });
-        const data = await response.json();
-        if (data.success) {
-            await loadEmployees();
-            return true;
-        } else {
-            showToast(data.message, 'error');
-            return false;
-        }
-    } catch (error) {
-        console.error('Error de red al eliminar empleado:', error);
-        showToast('Error de red al eliminar empleado', 'error');
-        return false;
-    }
+  const result = await apiDeleteEmployee(employeeId);
+  if (!result.success) {
+    showToast(result.message, "error");
+  }
+  return result.success;
 }
 
 // ==================== INTERFAZ DEL MÓDULO ====================
 
 function renderEmployeesModule() {
-    const content = document.getElementById('mainContent');
-    content.innerHTML = `
+  const content = document.getElementById("mainContent");
+  content.innerHTML = `
         <div class="content-header-actions">
             <div>
                 <h2>Gestión de Empleados</h2>
@@ -122,12 +70,18 @@ function renderEmployeesModule() {
             </div>
             <div class="kpi-card">
                 <div class="kpi-header"><span class="kpi-label">Empleados Activos</span><span class="kpi-icon">✓</span></div>
-                <div class="kpi-value">${AppState.employees.filter(e => e.status === 'active').length}</div>
+                <div class="kpi-value">${
+                  AppState.employees.filter((e) => e.status === "active").length
+                }</div>
                 <div class="kpi-description">En servicio actualmente</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-header"><span class="kpi-label">Nómina Total</span><span class="kpi-icon">💰</span></div>
-                <div class="kpi-value">${formatCurrency(AppState.employees.filter(e => e.status === 'active').reduce((sum, e) => sum + parseFloat(e.salary || 0), 0))}</div>
+                <div class="kpi-value">${formatCurrency(
+                  AppState.employees
+                    .filter((e) => e.status === "active")
+                    .reduce((sum, e) => sum + parseFloat(e.salary || 0), 0)
+                )}</div>
                 <div class="kpi-description">Salarios mensuales</div>
             </div>
         </div>
@@ -145,35 +99,40 @@ function renderEmployeesModule() {
         </div>
         <div id="employeesTableContainer"></div>
     `;
-    renderEmployeesTable();
+  renderEmployeesTable();
 }
 
-let employeeSearchTerm = '';
-let employeeStatusFilter = '';
+let employeeSearchTerm = "";
+let employeeStatusFilter = "";
 
 function filterEmployees() {
-    employeeSearchTerm = document.getElementById('employeeSearch').value;
-    employeeStatusFilter = document.getElementById('statusFilter').value;
-    renderEmployeesTable();
+  employeeSearchTerm = document.getElementById("employeeSearch").value;
+  employeeStatusFilter = document.getElementById("statusFilter").value;
+  renderEmployeesTable();
 }
 
 function renderEmployeesTable() {
-    const container = document.getElementById('employeesTableContainer');
-    const employees = getEmployees({ searchTerm: employeeSearchTerm, status: employeeStatusFilter });
-    if (employees.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><p>No se encontraron empleados</p></div>';
-        return;
-    }
-    let html = `
+  const container = document.getElementById("employeesTableContainer");
+  const employees = getEmployees({
+    searchTerm: employeeSearchTerm,
+    status: employeeStatusFilter,
+  });
+  if (employees.length === 0) {
+    container.innerHTML =
+      '<div class="empty-state"><div class="empty-state-icon">👥</div><p>No se encontraron empleados</p></div>';
+    return;
+  }
+  let html = `
         <div class="table-container">
             <table>
                 <thead><tr><th>Nombre</th><th>Puesto</th><th>Email</th><th>Teléfono</th><th>Salario</th><th>Estado</th><th>Acciones</th></tr></thead>
                 <tbody>
     `;
-    employees.forEach(employee => {
-        const statusClass = employee.status === 'active' ? 'badge-success' : 'badge-danger';
-        const statusText = employee.status === 'active' ? 'Activo' : 'Inactivo';
-        html += `
+  employees.forEach((employee) => {
+    const statusClass =
+      employee.status === "active" ? "badge-success" : "badge-danger";
+    const statusText = employee.status === "active" ? "Activo" : "Inactivo";
+    html += `
             <tr data-id="${employee.id}">
                 <td><strong>${employee.name}</strong></td>
                 <td>${employee.position}</td>
@@ -189,93 +148,183 @@ function renderEmployeesTable() {
                 </td>
             </tr>
         `;
-    });
-    html += '</tbody></table></div>';
-    container.innerHTML = html;
+  });
+  html += "</tbody></table></div>";
+  container.innerHTML = html;
 
-    // Re-attach event listeners
-    container.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const employeeId = e.currentTarget.closest('tr').dataset.id;
-            editEmployee(employeeId);
-        });
+  // Re-attach event listeners
+  container.querySelectorAll(".btn-edit").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const employeeId = e.currentTarget.closest("tr").dataset.id;
+      editEmployee(employeeId);
     });
-    container.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const employeeId = e.currentTarget.closest('tr').dataset.id;
-            confirmDeleteEmployee(employeeId);
-        });
+  });
+  container.querySelectorAll(".btn-delete").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const employeeId = e.currentTarget.closest("tr").dataset.id;
+      confirmDeleteEmployee(employeeId);
     });
+  });
 }
 
-function showEmployeeModal(employeeId = null) {
-    currentEditingEmployee = employeeId;
-    const modal = document.getElementById('employeeModal');
-    const title = document.getElementById('employeeModalTitle');
-    if (employeeId) {
-        const employee = AppState.employees.find(e => e.id === parseInt(employeeId, 10));
-        if (!employee) return;
-        title.textContent = 'Editar Empleado';
-        document.getElementById('employeeName').value = employee.name;
-        document.getElementById('employeePosition').value = employee.position;
-        document.getElementById('employeeEmail').value = employee.email;
-        document.getElementById('employeePhone').value = employee.phone;
-        document.getElementById('employeeSalary').value = employee.salary;
-        document.getElementById('employeeStatus').value = employee.status;
-        document.getElementById('employeeHireDate').value = employee.hire_date;
-        document.getElementById('employeeAddress').value = employee.address;
-    } else {
-        title.textContent = 'Nuevo Empleado';
-        document.getElementById('employeeForm').reset();
-        document.getElementById('employeeStatus').value = 'active';
-        document.getElementById('employeeHireDate').value = new Date().toISOString().split('T')[0];
-    }
-    modal.classList.remove('hidden');
+async function showEmployeeModal(employeeId = null) {
+  currentEditingEmployee = employeeId;
+
+  // Cargar roles si no están en memoria
+  if (!AppState.roles || AppState.roles.length === 0) {
+    await apiLoadRoles();
+  }
+
+  // Poblar el dropdown de roles
+  const positionSelect = document.getElementById("employeePosition");
+  positionSelect.innerHTML = '<option value="">Selecciona un rol</option>';
+  AppState.roles.forEach((role) => {
+    positionSelect.innerHTML += `<option value="${role.name}">${role.name}</option>`;
+  });
+
+  const modal = document.getElementById("employeeModal");
+  const title = document.getElementById("employeeModalTitle");
+  const usernameInput = document.getElementById("employeeUsername");
+  const passwordInput = document.getElementById("employeePassword");
+  const usernameLabel = usernameInput.previousElementSibling;
+  const passwordLabel = passwordInput.parentElement.previousElementSibling;
+
+  if (employeeId) {
+    const employee = AppState.employees.find(
+      (e) => e.id === parseInt(employeeId, 10)
+    );
+    if (!employee) return;
+    title.textContent = "Editar Empleado";
+
+    // Campos opcionales al editar
+    usernameInput.removeAttribute("required");
+    passwordInput.removeAttribute("required");
+    usernameLabel.textContent = "Nombre de Usuario";
+    passwordLabel.textContent = "Contraseña";
+    usernameInput.placeholder = "Dejar vacío para no cambiar";
+    passwordInput.placeholder = "Dejar vacío para no cambiar";
+
+    document.getElementById("employeeName").value = employee.name;
+    document.getElementById("employeePosition").value = employee.position;
+    usernameInput.value = employee.username || "";
+    passwordInput.value = ""; // Nunca mostrar contraseña
+    document.getElementById("employeeEmail").value = employee.email;
+    document.getElementById("employeePhone").value = employee.phone;
+    document.getElementById("employeeSalary").value = employee.salary;
+    document.getElementById("employeeStatus").value = employee.status;
+    document.getElementById("employeeHireDate").value = employee.hire_date;
+    document.getElementById("employeeAddress").value = employee.address;
+  } else {
+    title.textContent = "Nuevo Empleado";
+
+    // Campos obligatorios al crear
+    usernameInput.setAttribute("required", "required");
+    passwordInput.setAttribute("required", "required");
+    usernameLabel.textContent = "Nombre de Usuario *";
+    passwordLabel.textContent = "Contraseña *";
+    usernameInput.placeholder = "Ingresa el nombre de usuario";
+    passwordInput.placeholder = "Mínimo 6 caracteres";
+
+    document.getElementById("employeeForm").reset();
+    document.getElementById("employeeStatus").value = "active";
+    document.getElementById("employeeHireDate").value = new Date()
+      .toISOString()
+      .split("T")[0];
+  }
+  modal.classList.remove("hidden");
 }
 
 function editEmployee(employeeId) {
-    showEmployeeModal(employeeId);
+  showEmployeeModal(employeeId);
 }
 
 function closeEmployeeModal() {
-    document.getElementById('employeeModal').classList.add('hidden');
-    currentEditingEmployee = null;
+  document.getElementById("employeeModal").classList.add("hidden");
+  currentEditingEmployee = null;
 }
 
 async function saveEmployee() {
-    const employeeData = {
-        name: document.getElementById('employeeName').value,
-        position: document.getElementById('employeePosition').value,
-        email: document.getElementById('employeeEmail').value,
-        phone: document.getElementById('employeePhone').value,
-        salary: document.getElementById('employeeSalary').value,
-        status: document.getElementById('employeeStatus').value,
-        hire_date: document.getElementById('employeeHireDate').value,
-        address: document.getElementById('employeeAddress').value
-    };
-    if (!employeeData.name || !employeeData.position) {
-        showToast('Por favor completa los campos requeridos', 'error');
-        return;
+  const employeeData = {
+    name: document.getElementById("employeeName").value,
+    position: document.getElementById("employeePosition").value,
+    username: document.getElementById("employeeUsername").value,
+    password: document.getElementById("employeePassword").value,
+    email: document.getElementById("employeeEmail").value,
+    phone: document.getElementById("employeePhone").value,
+    salary: document.getElementById("employeeSalary").value,
+    status: document.getElementById("employeeStatus").value,
+    hire_date: document.getElementById("employeeHireDate").value,
+    address: document.getElementById("employeeAddress").value,
+  };
+
+  // Validaciones base
+  if (!employeeData.name || !employeeData.position) {
+    showToast("Por favor completa el nombre y puesto", "error");
+    return;
+  }
+
+  // Para nuevo empleado, usuario y contraseña son obligatorios
+  if (!currentEditingEmployee) {
+    if (!employeeData.username || !employeeData.password) {
+      showToast(
+        "Usuario y contraseña son obligatorios para nuevos empleados",
+        "error"
+      );
+      return;
     }
-    let success = false;
-    if (currentEditingEmployee) {
-        success = await updateEmployee(currentEditingEmployee, employeeData);
+  }
+
+  // Validación de contraseña mínima (si se proporciona)
+  if (employeeData.password && employeeData.password.length < 6) {
+    showToast("La contraseña debe tener al menos 6 caracteres", "error");
+    return;
+  }
+
+  let success = false;
+  let response = null;
+
+  if (currentEditingEmployee) {
+    response = await apiUpdateEmployee(currentEditingEmployee, employeeData);
+    success = response.success;
+  } else {
+    response = await apiCreateEmployee(employeeData);
+    success = response.success;
+  }
+
+  if (success) {
+    closeEmployeeModal();
+    renderEmployeesModule(); // Re-render the whole module to update KPIs
+
+    // Si se generaron credenciales automáticamente, mostrarlas
+    if (response.data?.generatedCredentials && !currentEditingEmployee) {
+      const creds = response.data.generatedCredentials;
+      let message = "Empleado creado correctamente.";
+
+      if (creds.password) {
+        message += `\n\n⚠️ CREDENCIALES GENERADAS:\nUsuario: ${creds.username}\nContraseña: ${creds.password}\n\n¡Guarda esta información! La contraseña no se mostrará de nuevo.`;
+        alert(message);
+      } else {
+        showToast(message, "success");
+      }
     } else {
-        success = await createEmployee(employeeData);
+      showToast(
+        currentEditingEmployee
+          ? "Empleado actualizado correctamente"
+          : "Empleado creado correctamente",
+        "success"
+      );
     }
-    if (success) {
-        closeEmployeeModal();
-        renderEmployeesModule(); // Re-render the whole module to update KPIs
-        showToast(currentEditingEmployee ? 'Empleado actualizado correctamente' : 'Empleado creado correctamente', 'success');
-    }
+  } else {
+    showToast(response.message || "Error al guardar empleado", "error");
+  }
 }
 
 async function confirmDeleteEmployee(employeeId) {
-    if (confirm('¿Estás seguro de eliminar este empleado?')) {
-        const success = await deleteEmployee(employeeId);
-        if (success) {
-            showToast('Empleado eliminado correctamente', 'success');
-            renderEmployeesModule(); // Re-render the whole module to update KPIs
-        }
+  if (confirm("¿Estás seguro de eliminar este empleado?")) {
+    const success = await deleteEmployee(employeeId);
+    if (success) {
+      showToast("Empleado eliminado correctamente", "success");
+      renderEmployeesModule(); // Re-render the whole module to update KPIs
     }
+  }
 }

@@ -1,34 +1,21 @@
 // ==================== MÓDULO DE NOTIFICACIONES ====================
 
-// Cargar transacciones desde la API
-async function loadTransactions() {
-    try {
-        const response = await fetch('http://localhost/Proyecto-de-Equipo/api/transactions.php');
-        const text = await response.text();
-        try {
-            const data = JSON.parse(text);
-            if (data.success) {
-                AppState.transactions = data.data;
-            } else {
-                console.error('Error al cargar transacciones:', data.message);
-            }
-        } catch (error) {
-            console.error('Error al parsear JSON de transacciones:', error);
-            console.error('Respuesta recibida:', text);
-        }
-    } catch (error) {
-        console.error('Error de red al cargar transacciones:', error);
-    }
-}
+// Nota: La carga de transacciones ahora se hace desde api.js usando apiLoadTransactions()
 
 function renderNotificationsModule() {
-    const content = document.getElementById('mainContent');
-    
-    const pendingTransactions = AppState.transactions.filter(t => t.status === 'pendiente');
-    const approvedTransactions = AppState.transactions.filter(t => t.status === 'aprobada');
-    const rejectedTransactions = AppState.transactions.filter(t => t.status === 'rechazada');
-    
-    content.innerHTML = `
+  const content = document.getElementById("mainContent");
+
+  const pendingTransactions = AppState.transactions.filter(
+    (t) => t.status === "pendiente"
+  );
+  const approvedTransactions = AppState.transactions.filter(
+    (t) => t.status === "aprobada"
+  );
+  const rejectedTransactions = AppState.transactions.filter(
+    (t) => t.status === "rechazada"
+  );
+
+  content.innerHTML = `
         <div class="content-header">
             <h2>Gestión de Notificaciones</h2>
             <p class="text-muted">Aprueba o rechaza solicitudes de movimientos</p>
@@ -40,7 +27,9 @@ function renderNotificationsModule() {
                     <span class="kpi-label">Pendientes</span>
                     <span class="kpi-icon">⏳</span>
                 </div>
-                <div class="kpi-value text-warning">${pendingTransactions.length}</div>
+                <div class="kpi-value text-warning">${
+                  pendingTransactions.length
+                }</div>
                 <div class="kpi-description">Requieren revisión</div>
             </div>
             <div class="kpi-card">
@@ -48,7 +37,9 @@ function renderNotificationsModule() {
                     <span class="kpi-label">Aprobadas</span>
                     <span class="kpi-icon">✓</span>
                 </div>
-                <div class="kpi-value text-success">${approvedTransactions.length}</div>
+                <div class="kpi-value text-success">${
+                  approvedTransactions.length
+                }</div>
                 <div class="kpi-description">Transacciones completadas</div>
             </div>
             <div class="kpi-card">
@@ -56,7 +47,9 @@ function renderNotificationsModule() {
                     <span class="kpi-label">Rechazadas</span>
                     <span class="kpi-icon">✗</span>
                 </div>
-                <div class="kpi-value text-danger">${rejectedTransactions.length}</div>
+                <div class="kpi-value text-danger">${
+                  rejectedTransactions.length
+                }</div>
                 <div class="kpi-description">No autorizadas</div>
             </div>
         </div>
@@ -64,7 +57,11 @@ function renderNotificationsModule() {
         <div class="tabs">
             <div class="tab-list">
                 <button class="tab-button active" data-tab="pending">
-                    ⏳ Pendientes ${pendingTransactions.length > 0 ? `<span class="badge badge-warning" style="margin-left: 0.5rem;">${pendingTransactions.length}</span>` : ''}
+                    ⏳ Pendientes ${
+                      pendingTransactions.length > 0
+                        ? `<span class="badge badge-warning" style="margin-left: 0.5rem;">${pendingTransactions.length}</span>`
+                        : ""
+                    }
                 </button>
                 <button class="tab-button" data-tab="approved">
                     ✓ Aprobadas
@@ -75,33 +72,33 @@ function renderNotificationsModule() {
             </div>
 
             <div id="pendingTab" class="tab-content active">
-                ${renderNotificationsTable(pendingTransactions, 'pendiente')}
+                ${renderNotificationsTable(pendingTransactions, "pendiente")}
             </div>
 
             <div id="approvedTab" class="tab-content">
-                ${renderNotificationsTable(approvedTransactions, 'aprobada')}
+                ${renderNotificationsTable(approvedTransactions, "aprobada")}
             </div>
 
             <div id="rejectedTab" class="tab-content">
-                ${renderNotificationsTable(rejectedTransactions, 'rechazada')}
+                ${renderNotificationsTable(rejectedTransactions, "rechazada")}
             </div>
         </div>
     `;
-    
-    setupTabListeners();
+
+  setupTabListeners();
 }
 
 function renderNotificationsTable(transactions, status) {
-    if (transactions.length === 0) {
-        const emptyMessages = {
-            'pendiente': 'No hay solicitudes pendientes',
-            'aprobada': 'No hay transacciones aprobadas',
-            'rechazada': 'No hay transacciones rechazadas'
-        };
-        return `<div class="empty-state"><div class="empty-state-icon">📭</div><p>${emptyMessages[status]}</p></div>`;
-    }
-    
-    let html = `
+  if (transactions.length === 0) {
+    const emptyMessages = {
+      pendiente: "No hay solicitudes pendientes",
+      aprobada: "No hay transacciones aprobadas",
+      rechazada: "No hay transacciones rechazadas",
+    };
+    return `<div class="empty-state"><div class="empty-state-icon">📭</div><p>${emptyMessages[status]}</p></div>`;
+  }
+
+  let html = `
         <div class="table-container">
             <table>
                 <thead>
@@ -112,27 +109,37 @@ function renderNotificationsTable(transactions, status) {
                         <th>Cantidad</th>
                         <th>Usuario</th>
                         <th>Motivo</th>
-                        ${status === 'pendiente' ? '<th>Acciones</th>' : ''}
+                        ${status === "pendiente" ? "<th>Acciones</th>" : ""}
                     </tr>
                 </thead>
                 <tbody>
     `;
-    
-    transactions.forEach(transaction => {
-        const typeClass = transaction.type === 'entrada' ? 'badge-success' : 'badge-warning';
-        
-        html += `
+
+  transactions.forEach((transaction) => {
+    const typeClass =
+      transaction.type === "entrada" ? "badge-success" : "badge-warning";
+    const productName =
+      transaction.product_name || transaction.productName || "";
+    const productCode =
+      transaction.product_code || transaction.productCode || "";
+    const createdBy =
+      transaction.created_by_name || transaction.createdBy || "";
+    const transDate = transaction.created_at || transaction.date;
+
+    html += `
             <tr>
-                <td>${formatDate(transaction.date)}</td>
+                <td>${formatDate(transDate)}</td>
                 <td><span class="badge ${typeClass}">${transaction.type.toUpperCase()}</span></td>
                 <td>
-                    <strong>${transaction.productName}</strong><br>
-                    <small>${transaction.productCode}</small>
+                    <strong>${productName}</strong><br>
+                    <small>${productCode}</small>
                 </td>
                 <td><strong>${transaction.quantity}</strong></td>
-                <td>${transaction.createdBy}</td>
-                <td>${transaction.reason || '-'}</td>
-                ${status === 'pendiente' ? `
+                <td>${createdBy}</td>
+                <td>${transaction.reason || transaction.motivo || "-"}</td>
+                ${
+                  status === "pendiente"
+                    ? `
                     <td>
                         <div class="table-actions">
                             <button class="btn btn-sm btn-success" onclick="handleApproveTransaction('${transaction.id}')" title="Aprobar">
@@ -148,36 +155,40 @@ function renderNotificationsTable(transactions, status) {
                             </button>
                         </div>
                     </td>
-                ` : ''}
+                `
+                    : ""
+                }
             </tr>
         `;
-    });
-    
-    html += '</tbody></table></div>';
-    return html;
+  });
+
+  html += "</tbody></table></div>";
+  return html;
 }
 
-function handleApproveTransaction(transactionId) {
-    if (approveTransaction(transactionId)) {
-        showToast('Transacción aprobada correctamente', 'success');
-        renderNotificationsModule();
+async function handleApproveTransaction(transactionId) {
+  const result = await apiApproveTransaction(transactionId);
+  if (result.success) {
+    showToast("Transacción aprobada correctamente", "success");
+    renderNotificationsModule();
+  } else {
+    showToast(result.message || "Error al aprobar la transacción", "error");
+  }
+}
+
+async function handleRejectTransaction(transactionId) {
+  if (confirm("¿Estás seguro de rechazar esta transacción?")) {
+    const result = await apiRejectTransaction(transactionId);
+    if (result.success) {
+      showToast("Transacción rechazada", "info");
+      renderNotificationsModule();
     } else {
-        showToast('Error al aprobar la transacción', 'error');
+      showToast(result.message || "Error al rechazar la transacción", "error");
     }
-}
-
-function handleRejectTransaction(transactionId) {
-    if (confirm('¿Estás seguro de rechazar esta transacción?')) {
-        if (rejectTransaction(transactionId)) {
-            showToast('Transacción rechazada', 'info');
-            renderNotificationsModule();
-        } else {
-            showToast('Error al rechazar la transacción', 'error');
-        }
-    }
+  }
 }
 
 // Obtener número de notificaciones pendientes
 function getPendingNotificationsCount() {
-    return AppState.transactions.filter(t => t.status === 'pendiente').length;
+  return AppState.transactions.filter((t) => t.status === "pendiente").length;
 }

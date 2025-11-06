@@ -10,7 +10,6 @@
 require_once 'config.php';
 setCorsHeaders();
 
-// Manejar solicitud OPTIONS (pre-flight)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
@@ -19,165 +18,361 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $conn = getConnection();
 $method = $_SERVER['REQUEST_METHOD'];
 
-// ==================== GET: LISTAR PRODUCTOS ====================
 if ($method === 'GET') {
-    // Permite filtrar por ?status=inactive, por defecto muestra los activos
-    $status = isset($_GET['status']) ? sanitizeInput($_GET['status']) : 'active';
-    $active_flag = ($status === 'inactive') ? 0 : 1;
-
-    $sql = "SELECT * FROM products WHERE active = ? ORDER BY name ASC";
-    
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $active_flag);
-    $stmt->execute();
-    
-    $result = $stmt->get_result();
-    $products = $result->fetch_all(MYSQLI_ASSOC);
-    
-    jsonResponse(true, 'Productos obtenidos', $products);
-}
-
-// ==================== POST: CREAR PRODUCTO ====================
-elseif ($method === 'POST') {
-    $json = file_get_contents('php://input');
-    $data = json_decode($json, true);
-    
-    $required = ['code', 'name', 'category'];
-    foreach ($required as $field) {
-        if (!isset($data[$field]) || empty($data[$field])) {
-            jsonResponse(false, "El campo $field es requerido");
-        }
-    }
-    
-    $checkStmt = $conn->prepare("SELECT id FROM products WHERE code = ?");
-    $checkStmt->bind_param("s", $data['code']);
-    $checkStmt->execute();
-    if ($checkStmt->get_result()->num_rows > 0) {
-        jsonResponse(false, 'El código de producto ya existe');
-    }
-    $checkStmt->close();
-    
-    $stmt = $conn->prepare("
-        INSERT INTO products (code, name, category, description, price, stock, min_stock, max_stock, location, active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-    ");
-    
-    $description = isset($data['description']) ? $data['description'] : '';
-    $price = isset($data['price']) ? floatval($data['price']) : 0.00;
-    $stock = isset($data['stock']) ? intval($data['stock']) : 0;
-    $min_stock = isset($data['min_stock']) ? intval($data['min_stock']) : 0;
-    $max_stock = isset($data['max_stock']) ? intval($data['max_stock']) : 100;
-    $location = isset($data['location']) ? $data['location'] : '';
-
-    $stmt->bind_param(
-        "ssssdiiis",
-        $data['code'],
-        $data['name'],
-        $data['category'],
-        $description,
-        $price,
-        $stock,
-        $min_stock,
-        $max_stock,
-        $location
-    );
-    
-    if ($stmt->execute()) {
-        $newId = $conn->insert_id;
-        jsonResponse(true, 'Producto creado exitosamente', ['id' => $newId]);
-    } else {
-        jsonResponse(false, 'Error al crear el producto: ' . $stmt->error);
-    }
-}
-
-// ==================== PUT: ACTUALIZAR PRODUCTO (Y RESTAURAR) ====================
-elseif ($method === 'PUT') {
-    $json = file_get_contents('php://input');
-    $data = json_decode($json, true);
-    
-    if (!isset($data['id'])) {
-        jsonResponse(false, 'El ID del producto es requerido');
-    }
-    $id = intval($data['id']);
-
-    $checkStmt = $conn->prepare("SELECT id FROM products WHERE code = ? AND id != ?");
-    $checkStmt->bind_param("si", $data['code'], $id);
-    $checkStmt->execute();
-    if ($checkStmt->get_result()->num_rows > 0) {
-        jsonResponse(false, 'El código de producto ya está en uso por otro producto');
-    }
-    $checkStmt->close();
-    
-    $stmt = $conn->prepare("
-        UPDATE products 
-        SET code = ?, name = ?, category = ?, description = ?, price = ?, 
-            stock = ?, min_stock = ?, max_stock = ?, location = ?, active = ?
-        WHERE id = ?
-    ");
-
-    $description = isset($data['description']) ? $data['description'] : '';
-    $price = isset($data['price']) ? floatval($data['price']) : 0.00;
-    $stock = isset($data['stock']) ? intval($data['stock']) : 0;
-    $min_stock = isset($data['min_stock']) ? intval($data['min_stock']) : 0;
-    $max_stock = isset($data['max_stock']) ? intval($data['max_stock']) : 100;
-    $location = isset($data['location']) ? $data['location'] : '';
-    // Permite restaurar un producto. Si no se envía 'active', se mantiene activo por defecto.
-    $active = isset($data['active']) ? intval($data['active']) : 1;
-
-    $stmt->bind_param(
-        "ssssdiiisii",
-        $data['code'],
-        $data['name'],
-        $data['category'],
-        $description,
-        $price,
-        $stock,
-        $min_stock,
-        $max_stock,
-        $location,
-        $active,
-        $id
-    );
-
-    if ($stmt->execute()) {
-        if ($stmt->affected_rows > 0) {
-            jsonResponse(true, 'Producto actualizado exitosamente');
-        } else {
-            jsonResponse(false, 'No se encontró el producto o no hubo cambios');
-        }
-    } else {
-        jsonResponse(false, 'Error al actualizar el producto: ' . $stmt->error);
-    }
-}
-
-// ==================== DELETE: DESACTIVAR PRODUCTO ====================
-elseif ($method === 'DELETE') {
-    // Este método ahora solo desactiva (soft delete). La restauración se hace con PUT.
-    $json = file_get_contents('php://input');
-    $data = json_decode($json, true);
-    
-    if (!isset($data['id'])) {
-        jsonResponse(false, 'El ID del producto es requerido');
-    }
-    $id = intval($data['id']);
-
-    $stmt = $conn->prepare("UPDATE products SET active = 0 WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    
-    if ($stmt->execute()) {
-        if ($stmt->affected_rows > 0) {
-            jsonResponse(true, 'Producto desactivado exitosamente');
-        } else {
-            jsonResponse(false, 'No se encontró el producto a desactivar');
-        }
-    } else {
-        jsonResponse(false, 'Error al desactivar el producto: ' . $stmt->error);
-    }
-}
-
-else {
+    handleGetProducts($conn);
+} elseif ($method === 'POST') {
+    handleCreateProduct($conn);
+} elseif ($method === 'PUT') {
+    handleUpdateProduct($conn);
+} elseif ($method === 'DELETE') {
+    handleDeleteProduct($conn);
+} else {
     jsonResponse(false, 'Método no soportado');
 }
 
 $conn->close();
+
+function handleGetProducts(mysqli $conn): void
+{
+    $status = isset($_GET['status']) ? sanitizeInput($_GET['status']) : 'active';
+    $filterByActive = null;
+    if ($status === 'active') {
+        $filterByActive = 1;
+    } elseif ($status === 'inactive') {
+        $filterByActive = 0;
+    }
+
+    $sql = "
+        SELECT 
+            p.id_producto,
+            p.codigo,
+            p.nombre_producto,
+            p.descripcion,
+            p.precio,
+            p.stock_actual,
+            p.stock_minimo,
+            p.stock_maximo,
+            p.ubicacion,
+            p.activo,
+            p.creado,
+            p.actualizado,
+            p.id_categoria,
+            c.nombre_categoria
+        FROM producto p
+        LEFT JOIN categoria c ON c.id_categoria = p.id_categoria
+    ";
+
+    if ($filterByActive !== null) {
+        $sql .= " WHERE p.activo = ?";
+    }
+
+    $sql .= " ORDER BY p.nombre_producto ASC";
+
+    if ($filterByActive !== null) {
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('i', $filterByActive);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    } else {
+        $result = $conn->query($sql);
+    }
+
+    $products = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $products[] = mapProductRow($row);
+        }
+    }
+
+    if (isset($stmt)) {
+        $stmt->close();
+    }
+
+    jsonResponse(true, 'Productos obtenidos', $products);
+}
+
+function handleCreateProduct(mysqli $conn): void
+{
+    $payload = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($payload)) {
+        jsonResponse(false, 'Datos inválidos');
+    }
+
+    $required = ['code', 'name', 'category'];
+    foreach ($required as $field) {
+        if (empty($payload[$field])) {
+            jsonResponse(false, "El campo $field es requerido");
+        }
+    }
+
+    if (productCodeExists($conn, $payload['code'])) {
+        jsonResponse(false, 'El código de producto ya existe');
+    }
+
+    $categoryId = getCategoryId($conn, $payload['category']);
+    if (!$categoryId) {
+        jsonResponse(false, 'No se pudo determinar la categoría');
+    }
+
+    $stmt = $conn->prepare('
+        INSERT INTO producto (
+            codigo,
+            nombre_producto,
+            descripcion,
+            precio,
+            stock_actual,
+            stock_minimo,
+            stock_maximo,
+            ubicacion,
+            id_categoria,
+            activo
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    ');
+
+    $description = $payload['description'] ?? '';
+    $price = isset($payload['price']) ? floatval($payload['price']) : 0.0;
+    $stock = isset($payload['stock']) ? intval($payload['stock']) : 0;
+    $minStock = isset($payload['min_stock']) ? intval($payload['min_stock']) : (isset($payload['minStock']) ? intval($payload['minStock']) : 0);
+    $maxStock = isset($payload['max_stock']) ? intval($payload['max_stock']) : (isset($payload['maxStock']) ? intval($payload['maxStock']) : 100);
+    $location = $payload['location'] ?? '';
+
+    $stmt->bind_param(
+        'sssdiiisi',
+        $payload['code'],
+        $payload['name'],
+        $description,
+        $price,
+        $stock,
+        $minStock,
+        $maxStock,
+        $location,
+        $categoryId
+    );
+
+    if (!$stmt->execute()) {
+        jsonResponse(false, 'Error al crear el producto: ' . $stmt->error);
+    }
+
+    $newId = $conn->insert_id;
+    $stmt->close();
+
+    $product = getProductById($conn, $newId);
+    jsonResponse(true, 'Producto creado exitosamente', $product);
+}
+
+function handleUpdateProduct(mysqli $conn): void
+{
+    $payload = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($payload) || empty($payload['id'])) {
+        jsonResponse(false, 'El ID del producto es requerido');
+    }
+
+    $productId = intval($payload['id']);
+    $currentProduct = getProductById($conn, $productId);
+    if (!$currentProduct) {
+        jsonResponse(false, 'Producto no encontrado');
+    }
+
+    if (isset($payload['code']) && productCodeExists($conn, $payload['code'], $productId)) {
+        jsonResponse(false, 'El código de producto ya está en uso');
+    }
+
+    $categoryId = $currentProduct['category_id'] ?? null;
+    if (!empty($payload['category'])) {
+        $categoryId = getCategoryId($conn, $payload['category']);
+        if (!$categoryId) {
+            jsonResponse(false, 'No se pudo determinar la categoría');
+        }
+    }
+
+    $stmt = $conn->prepare('
+        UPDATE producto
+        SET codigo = ?,
+            nombre_producto = ?,
+            descripcion = ?,
+            precio = ?,
+            stock_actual = ?,
+            stock_minimo = ?,
+            stock_maximo = ?,
+            ubicacion = ?,
+            id_categoria = ?,
+            activo = ?
+        WHERE id_producto = ?
+    ');
+
+    $description = $payload['description'] ?? '';
+    $price = isset($payload['price']) ? floatval($payload['price']) : 0.0;
+    $stock = isset($payload['stock']) ? intval($payload['stock']) : 0;
+    $minStock = isset($payload['min_stock']) ? intval($payload['min_stock']) : (isset($payload['minStock']) ? intval($payload['minStock']) : 0);
+    $maxStock = isset($payload['max_stock']) ? intval($payload['max_stock']) : (isset($payload['maxStock']) ? intval($payload['maxStock']) : 100);
+    $location = $payload['location'] ?? '';
+    $active = isset($payload['active']) ? intval($payload['active']) : 1;
+
+    $categoryId = $categoryId !== null ? intval($categoryId) : null;
+
+    $stmt->bind_param(
+        'sssdiiisiii',
+        $payload['code'],
+        $payload['name'],
+        $description,
+        $price,
+        $stock,
+        $minStock,
+        $maxStock,
+        $location,
+        $categoryId,
+        $active,
+        $productId
+    );
+
+    if (!$stmt->execute()) {
+        jsonResponse(false, 'Error al actualizar el producto: ' . $stmt->error);
+    }
+
+    $stmt->close();
+
+    $product = getProductById($conn, $productId);
+    jsonResponse(true, 'Producto actualizado exitosamente', $product);
+}
+
+function handleDeleteProduct(mysqli $conn): void
+{
+    $productId = null;
+
+    if (isset($_GET['id'])) {
+        $productId = intval($_GET['id']);
+    } else {
+        $payload = json_decode(file_get_contents('php://input'), true);
+        if (is_array($payload) && !empty($payload['id'])) {
+            $productId = intval($payload['id']);
+        }
+    }
+
+    if (!$productId) {
+        jsonResponse(false, 'El ID del producto es requerido');
+    }
+
+    $stmt = $conn->prepare('UPDATE producto SET activo = 0 WHERE id_producto = ?');
+    $stmt->bind_param('i', $productId);
+
+    if (!$stmt->execute()) {
+        jsonResponse(false, 'Error al desactivar el producto: ' . $stmt->error);
+    }
+
+    $affected = $stmt->affected_rows;
+    $stmt->close();
+
+    if ($affected === 0) {
+        jsonResponse(false, 'No se encontró el producto a desactivar');
+    }
+
+    jsonResponse(true, 'Producto desactivado exitosamente');
+}
+
+function productCodeExists(mysqli $conn, string $code, ?int $excludeId = null): bool
+{
+    $sql = 'SELECT 1 FROM producto WHERE codigo = ?';
+    if ($excludeId) {
+        $sql .= ' AND id_producto != ?';
+    }
+
+    $stmt = $conn->prepare($sql);
+    if ($excludeId) {
+        $stmt->bind_param('si', $code, $excludeId);
+    } else {
+        $stmt->bind_param('s', $code);
+    }
+
+    $stmt->execute();
+    $stmt->store_result();
+    $exists = $stmt->num_rows > 0;
+    $stmt->close();
+    return $exists;
+}
+
+function getCategoryId(mysqli $conn, string $name): ?int
+{
+    $name = trim($name);
+    if ($name === '') {
+        return null;
+    }
+
+    $stmt = $conn->prepare('SELECT id_categoria FROM categoria WHERE LOWER(nombre_categoria) = LOWER(?) LIMIT 1');
+    $stmt->bind_param('s', $name);
+    $stmt->execute();
+    $stmt->bind_result($id);
+    if ($stmt->fetch()) {
+        $stmt->close();
+        return (int)$id;
+    }
+    $stmt->close();
+
+    $insert = $conn->prepare('INSERT INTO categoria (nombre_categoria) VALUES (?)');
+    $insert->bind_param('s', $name);
+    if (!$insert->execute()) {
+        return null;
+    }
+    $newId = (int)$insert->insert_id;
+    $insert->close();
+    return $newId;
+}
+
+function getProductById(mysqli $conn, int $productId): ?array
+{
+    $stmt = $conn->prepare('
+        SELECT 
+            p.id_producto,
+            p.codigo,
+            p.nombre_producto,
+            p.descripcion,
+            p.precio,
+            p.stock_actual,
+            p.stock_minimo,
+            p.stock_maximo,
+            p.ubicacion,
+            p.activo,
+            p.creado,
+            p.actualizado,
+            p.id_categoria,
+            c.nombre_categoria
+        FROM producto p
+        LEFT JOIN categoria c ON c.id_categoria = p.id_categoria
+        WHERE p.id_producto = ?
+        LIMIT 1
+    ');
+    $stmt->bind_param('i', $productId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+
+    if (!$row) {
+        return null;
+    }
+
+    return mapProductRow($row);
+}
+
+function mapProductRow(array $row): array
+{
+    $categoryName = $row['nombre_categoria'] ?? '';
+    return [
+        'id' => (int)$row['id_producto'],
+        'code' => $row['codigo'],
+        'name' => $row['nombre_producto'],
+        'description' => $row['descripcion'] ?? '',
+        'price' => isset($row['precio']) ? (float)$row['precio'] : 0.0,
+        'stock' => isset($row['stock_actual']) ? (int)$row['stock_actual'] : 0,
+        'min_stock' => isset($row['stock_minimo']) ? (int)$row['stock_minimo'] : 0,
+        'max_stock' => isset($row['stock_maximo']) ? (int)$row['stock_maximo'] : 0,
+        'minStock' => isset($row['stock_minimo']) ? (int)$row['stock_minimo'] : 0,
+        'maxStock' => isset($row['stock_maximo']) ? (int)$row['stock_maximo'] : 0,
+        'location' => $row['ubicacion'] ?? '',
+        'category' => $categoryName,
+        'category_id' => isset($row['id_categoria']) ? (int)$row['id_categoria'] : null,
+        'active' => isset($row['activo']) ? (int)$row['activo'] : 1,
+        'created_at' => $row['creado'] ?? null,
+        'updated_at' => $row['actualizado'] ?? null
+    ];
+}
 ?>
