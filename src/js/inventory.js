@@ -185,7 +185,7 @@ async function saveProduct() {
     renderProductsTable();
     renderInactiveProductsTable();
     showToast(
-      currentEditingProduct ? "Producto actualizado" : "Producto creado",
+      currentEditingProduct ? "Producto actualizado" : "Producto actualizado",
       "success"
     );
   }
