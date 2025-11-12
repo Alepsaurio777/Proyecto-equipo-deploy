@@ -1,0 +1,192 @@
+.e-commerce-website-design {
+  	width: 100%;
+  	height: 955px;
+  	position: relative;
+  	background: linear-gradient(135deg, rgba(3, 2, 19, 0.05), rgba(3, 2, 19, 0.1)), #fff;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	text-align: center;
+  	font-size: 16px;
+  	color: #0a0a0a;
+  	font-family: Arial;
+}
+.card {
+  	height: 494px;
+  	width: 448px;
+  	border-radius: 14px;
+  	background-color: #fff;
+  	border: 1px solid rgba(0, 0, 0, 0.1);
+  	box-sizing: border-box;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 32px 0px 32px 32px;
+  	gap: 56px;
+}
+.login {
+  	width: 382px;
+  	height: 136px;
+  	position: relative;
+}
+.container-icon {
+  	position: absolute;
+  	top: 0px;
+  	left: 159px;
+  	border-radius: 33554400px;
+  	width: 64px;
+  	height: 64px;
+    background-color: #030213; /* Fondo negro */
+    /* Centra la imagen interna (tienda.svg) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.heading-1 {
+  	position: absolute;
+  	top: 80px;
+  	left: 0px;
+  	width: 382px;
+  	height: 24px;
+}
+.ferretera-el-tornillo {
+  	position: absolute;
+  	top: -2px;
+  	left: 119.2px;
+  	line-height: 24px;
+}
+.paragraph {
+  	position: absolute;
+  	top: 112px;
+  	left: 0px;
+  	width: 382px;
+  	height: 24px;
+  	color: #717182;
+}
+.sistema-de-gestin {
+  	position: absolute;
+  	top: -2px;
+  	left: 92.11px;
+  	line-height: 24px;
+}
+.e-commerce-website-design-login {
+  	width: 382px;
+  	flex: 1;
+  	position: relative;
+  	text-align: left;
+  	font-size: 14px;
+}
+.container {
+  	position: absolute;
+  	top: 0px;
+  	left: 0px;
+  	width: 382px;
+  	height: 58px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 8px;
+}
+.primitivelabel {
+  	align-self: stretch;
+  	height: 14px;
+  	display: flex;
+  	align-items: center;
+}
+.usuario {
+  	position: relative;
+  	line-height: 14px;
+}
+.e-commerce-website-design-container {
+  	align-self: stretch;
+  	height: 36px;
+  	position: relative;
+  	color: #717182;
+}
+.input {
+  	position: absolute;
+  	top: 0px;
+  	left: 0px;
+  	border-radius: 8px;
+  	background-color: #f3f3f5;
+  	border: 1px solid rgba(0, 0, 0, 0);
+  	box-sizing: border-box;
+    z-index: 1;
+  	width: 382px;
+  	height: 36px;
+  	overflow: hidden;
+  	display: flex;
+  	align-items: center;
+  	padding: 4px 12px 4px 40px;
+}
+.icon-input {
+    /* CLAVE: Posicionamiento absoluto para superponer */
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 12px;
+    width: 16px;
+    height: 16px;
+    z-index: 2; /* Para estar sobre el input */
+}
+.ingresa-tu-usuario {
+  	position: relative;
+}
+.icon {
+  	position: absolute;
+  	top: 10px;
+  	left: 12px;
+  	width: 16px;
+  	height: 16px;
+}
+.container2 {
+  	position: absolute;
+  	top: 74px;
+  	left: 0px;
+  	width: 382px;
+  	height: 58px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 8px;
+}
+.button {
+  	position: absolute;
+  	top: 148px;
+  	left: 0px;
+  	border-radius: 8px;
+  	background-color: #030213;
+  	width: 382px;
+  	height: 36px;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 8px 16px;
+  	box-sizing: border-box;
+  	color: #fff;
+}
+.iniciar-sesin {
+  	flex: 1;
+  	position: absolute;
+  	line-height: 20px;
+}
+.e-commerce-website-design-button {
+  	position: absolute;
+  	top: 200px;
+  	left: 107.88px;
+  	border-radius: 8px;
+  	width: 166.3px;
+  	height: 36px;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 8px 16px;
+  	box-sizing: border-box;
+  	color: #030213;
+}
+.olvid-mi-contrasea {
+  	position: relative;
+  	line-height: 20px;
+}
+
+
