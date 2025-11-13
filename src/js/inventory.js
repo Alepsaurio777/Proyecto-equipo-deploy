@@ -160,20 +160,75 @@ function showProductModal(productId = null, context = "active") {
 
 async function saveProduct() {
   const productData = {
-    name: document.getElementById("productName").value,
-    code: document.getElementById("productCode").value,
-    category: document.getElementById("productCategory").value,
-    stock: document.getElementById("productStock").value,
-    min_stock: document.getElementById("productMinStock").value,
-    max_stock: document.getElementById("productMaxStock").value,
-    price: document.getElementById("productPrice").value,
-    location: document.getElementById("productLocation").value,
-    description: document.getElementById("productDescription").value,
+    name: document.getElementById("productName").value.trim(),
+    code: document.getElementById("productCode").value.trim(),
+    category: document.getElementById("productCategory").value.trim(),
+    stock: parseInt(document.getElementById("productStock").value, 10),
+    min_stock: parseInt(document.getElementById("productMinStock").value, 10),
+    max_stock: parseInt(document.getElementById("productMaxStock").value, 10),
+    price: parseFloat(document.getElementById("productPrice").value),
+    location: document.getElementById("productLocation").value.trim(),
+    description: document.getElementById("productDescription").value.trim(),
   };
+
+  // Normalizar NaN a 0 para inputs vacíos
+  if (Number.isNaN(productData.stock)) productData.stock = 0;
+  if (Number.isNaN(productData.min_stock)) productData.min_stock = 0;
+  if (Number.isNaN(productData.max_stock)) productData.max_stock = 0;
+  if (Number.isNaN(productData.price)) productData.price = 0;
+
+  // Campos requeridos
   if (!productData.name || !productData.code || !productData.category) {
     showToast("Por favor completa los campos requeridos", "error");
     return;
   }
+
+  // Validar precio: no puede ser negativo o cero
+  if (productData.price <= 0) {
+    showToast("El precio debe ser mayor que 0", "error");
+    return;
+  }
+
+  // No permitir stock, min_stock o max_stock negativos
+  if (productData.stock < 0) {
+    showToast("El stock actual no puede ser negativo", "error");
+    return;
+  }
+  if (productData.min_stock < 0) {
+    showToast("El stock mínimo no puede ser negativo", "error");
+    return;
+  }
+  if (productData.max_stock < 0) {
+    showToast("El stock máximo no puede ser negativo", "error");
+    return;
+  }
+
+  // min_stock debe ser <= max_stock
+  if (productData.min_stock > productData.max_stock) {
+    showToast(
+      `El stock mínimo (${productData.min_stock}) no puede ser mayor que el stock máximo (${productData.max_stock})`,
+      "error"
+    );
+    return;
+  }
+
+  // stock debe estar entre min_stock y max_stock
+  if (productData.stock > productData.max_stock) {
+    showToast(
+      `El stock actual (${productData.stock}) no puede ser mayor que el stock máximo (${productData.max_stock})`,
+      "error"
+    );
+    return;
+  }
+  if (productData.stock < productData.min_stock) {
+    showToast(
+      `El stock actual (${productData.stock}) no puede ser menor que el stock mínimo (${productData.min_stock})`,
+      "error"
+    );
+    return;
+  }
+
+  // Si todas las validaciones pasan, enviar al backend
   let success = false;
   if (currentEditingProduct) {
     success = await updateProduct(currentEditingProduct, productData);
@@ -185,17 +240,17 @@ async function saveProduct() {
     renderProductsTable();
     renderInactiveProductsTable();
     showToast(
-      currentEditingProduct ? "Producto actualizado" : "Producto actualizado",
+      currentEditingProduct ? "Producto actualizado" : "Producto creado exitosamente",
       "success"
     );
   }
 }
 
 async function confirmDeleteProduct(productId) {
-  if (confirm("¿Estás seguro de DESACTIVAR este producto?")) {
+  if (confirm("¿Estás seguro de ELIMINAR este producto? Esta acción no se puede deshacer.")) {
     const success = await deleteProduct(productId);
     if (success) {
-      showToast("Producto desactivado", "success");
+      showToast("Producto eliminado correctamente", "success");
       renderProductsTable();
       renderInactiveProductsTable();
     }
@@ -217,6 +272,17 @@ function closeTransactionModal() {
   document.getElementById("transactionModal").classList.add("hidden");
 }
 
+async function confirmPermanentDeleteProduct(productId) {
+  if (confirm("¿Estás COMPLETAMENTE seguro de ELIMINAR PERMANENTEMENTE este producto? Esta acción NO se puede deshacer y eliminará todos los datos asociados.")) {
+    const success = await deleteProduct(productId);
+    if (success) {
+      showToast("Producto eliminado permanentemente", "success");
+      renderProductsTable();
+      renderInactiveProductsTable();
+    }
+  }
+}
+
 function showTransactionModal() {
   const modal = document.getElementById("transactionModal");
   const productSelect = document.getElementById("transactionProduct");
@@ -230,20 +296,39 @@ function showTransactionModal() {
 
 async function saveTransaction() {
   const transactionData = {
-    productId: document.getElementById("transactionProduct").value,
-    quantity: document.getElementById("transactionQuantity").value,
-    type: document.getElementById("transactionType").value,
-    reason: document.getElementById("transactionReason").value,
+    productId: parseInt(document.getElementById("transactionProduct").value, 10),
+    quantity: parseInt(document.getElementById("transactionQuantity").value, 10),
+    type: document.getElementById("transactionType").value.trim(),
+    reason: document.getElementById("transactionReason").value.trim(),
     userId: AppState.currentUser.id,
   };
-  if (
-    !transactionData.productId ||
-    !transactionData.quantity ||
-    !transactionData.type
-  ) {
+
+  // Validar campos requeridos
+  if (!transactionData.productId || !transactionData.quantity || !transactionData.type) {
     showToast("Por favor completa los campos requeridos", "error");
     return;
   }
+
+  // Validar cantidad: debe ser positiva
+  if (Number.isNaN(transactionData.quantity) || transactionData.quantity <= 0) {
+    showToast("La cantidad debe ser un número mayor que 0", "error");
+    return;
+  }
+
+  // Verificar que el producto exista
+  const product = AppState.products.find((p) => p.id === transactionData.productId);
+  if (!product) {
+    showToast("El producto seleccionado no existe", "error");
+    return;
+  }
+
+  // Si es salida, verificar que haya stock suficiente
+  if (transactionData.type === "salida" && product.stock < transactionData.quantity) {
+    showToast(`Stock insuficiente. Stock disponible: ${product.stock}`, "error");
+    return;
+  }
+
+  // Enviar transacción al backend
   const success = await createTransaction(transactionData);
   if (success) {
     closeTransactionModal();
@@ -311,7 +396,7 @@ function renderProductsTable() {
                 <td>
                     <div class="table-actions">
                         <button class="btn btn-sm btn-ghost btn-edit" title="Editar"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                        <button class="btn btn-sm btn-ghost btn-delete" title="Desactivar"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+              <button class="btn btn-sm btn-danger btn-delete" title="Eliminar"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                     </div>
                 </td>
             </tr>
@@ -362,6 +447,7 @@ function renderInactiveProductsTable() {
                     <div class="table-actions">
                         <button class="btn btn-sm btn-ghost btn-edit-inactive" title="Editar"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
                         <button class="btn btn-sm btn-success btn-restore" title="Restaurar"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></button>
+              <button class="btn btn-sm btn-danger btn-delete-permanent" title="Eliminar Permanentemente"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
                     </div>
                 </td>
             </tr>
@@ -382,6 +468,12 @@ function renderInactiveProductsTable() {
       confirmRestoreProduct(productId);
     });
   });
+    container.querySelectorAll(".btn-delete-permanent").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const productId = e.currentTarget.closest("tr").dataset.id;
+        confirmPermanentDeleteProduct(productId);
+      });
+    });
 }
 
 function renderTransactionsTable() {
@@ -537,9 +629,7 @@ function renderInventoryModule() {
   document
     .getElementById("closeTransactionModalBtn")
     .addEventListener("click", () => closeTransactionModal());
-  document
-    .getElementById("saveTransactionBtn")
-    .addEventListener("click", () => saveTransaction());
+  // Nota: El listener de saveTransactionBtn ya está en app.js
 
   setupTabListeners();
   renderProductsTable();
@@ -618,33 +708,7 @@ function showTransactionModal() {
   modal.classList.remove("hidden");
 }
 
-function closeTransactionModal() {
-  document.getElementById("transactionModal").classList.add("hidden");
-}
-
-async function saveTransaction() {
-  const transactionData = {
-    productId: document.getElementById("transactionProduct").value,
-    quantity: document.getElementById("transactionQuantity").value,
-    type: document.getElementById("transactionType").value,
-    reason: document.getElementById("transactionReason").value,
-    userId: AppState.currentUser.id,
-  };
-  if (
-    !transactionData.productId ||
-    !transactionData.quantity ||
-    !transactionData.type
-  ) {
-    showToast("Por favor completa los campos requeridos", "error");
-    return;
-  }
-  const success = await createTransaction(transactionData);
-  if (success) {
-    closeTransactionModal();
-    renderTransactionsTable();
-    showToast("Movimiento registrado y pendiente de aprobación", "success");
-  }
-}
+// (La función closeTransactionModal y saveTransaction ya están definidas más arriba)
 
 async function confirmApproveTransaction(transactionId) {
   if (
