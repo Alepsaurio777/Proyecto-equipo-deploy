@@ -4,19 +4,25 @@
  * ARCHIVO DE CONFIGURACIÓN DE BASE DE DATOS
  * ==========================================
  * 
- * INSTRUCCIONES:
- * 1. Modifica los valores de las constantes con tus datos de conexión
- * 2. Asegúrate de tener instalado XAMPP, WAMP o similar
- * 3. Crea la base de datos '2' en phpMyAdmin
- * 4. Ejecuta el archivo 'database.sql' para crear las tablas
+ * Configuración para InfinityFree
  */
 
-// ==================== CONFIGURACIÓN DE CONEXIÓN ====================
-// TODO: Cambia estos valores según tu configuración local
-define('DB_HOST', 'localhost');        // Generalmente 'localhost' o '127.0.0.1'
-define('DB_USER', 'root');             // Usuario de tu MySQL (por defecto 'root' en XAMPP)
-define('DB_PASS', 'parra');                 // Contraseña de MySQL (vacío por defecto en XAMPP)
-define('DB_NAME', 'ferreteria_db');    // Nombre de la base de datos
+// ==================== CORS - Para desarrollo local ====================
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Content-Type: application/json; charset=utf-8');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// ==================== CREDENCIALES INFINITYFREE ====================
+define('DB_HOST', 'sql100.infinityfree.com');
+define('DB_USER', 'if0_40600490');
+define('DB_PASS', 'mJxilY7IH0GYZ');
+define('DB_NAME', 'if0_40600490_ferreteria_db');
 
 // ==================== CONEXIÓN A LA BASE DE DATOS ====================
 function getConnection()

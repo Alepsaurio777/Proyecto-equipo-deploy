@@ -1,7 +1,9 @@
 // ==================== MÓDULO DE API CENTRALIZADO ====================
 // Centraliza todas las llamadas a la API del backend
 
-const API_BASE_URL = "https://ferreteria-itvo.infinityfreeapp.com/endpoints";
+// Proxy CORS para evitar bloqueo de InfinityFree
+const API_BASE_URL =
+  "https://corsproxy.io/?https://ferreteria-itvo.infinityfreeapp.com/endpoints";
 
 // ==================== PRODUCTOS ====================
 async function apiLoadProducts(status = "active") {

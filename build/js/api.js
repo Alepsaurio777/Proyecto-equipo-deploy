@@ -1,10 +1,9 @@
 // ==================== MÓDULO DE API CENTRALIZADO ====================
 // Centraliza todas las llamadas a la API del backend
 
-// Para conexión local usa: "http://localhost/Proyecto-de-Equipo/backend/endpoints"
-// Para conexión LAN/Radmin usa tu IP: "http://26.208.19.211/Proyecto-de-Equipo/backend/endpoints"
+// Proxy CORS para evitar bloqueo de InfinityFree
 const API_BASE_URL =
-  "http://26.208.19.211/Proyecto-de-Equipo/backend/endpoints";
+  "https://corsproxy.io/?https://ferreteria-itvo.infinityfreeapp.com/endpoints";
 
 // ==================== PRODUCTOS ====================
 async function apiLoadProducts(status = "active") {
