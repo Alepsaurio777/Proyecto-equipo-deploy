@@ -11,9 +11,15 @@ function renderReportsModule() {
   const stockValue = AppState.products.reduce((sum, p) => sum + p.stock * p.price, 0);
 
   content.innerHTML = `
-        <div class="content-header">
-            <h2>Reportes de Inventario</h2>
-            <p class="text-muted">Analiza el estado y movimientos del inventario</p>
+        <div class="content-header-actions">
+            <div>
+                <h2>Reportes de Inventario</h2>
+                <p class="text-muted">Analiza el estado y movimientos del inventario</p>
+            </div>
+            <button class="btn btn-primary" onclick="showExportModal()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Exportar Reporte
+            </button>
         </div>
 
         <style>
@@ -640,4 +646,241 @@ function updateReportsTable(transactions) {
     `;
     tbody.appendChild(row);
   });
+}
+
+// ==================== FUNCIONES DE EXPORTACIÓN ====================
+
+function showExportModal() {
+  const modal = document.getElementById("exportModal");
+  // Establecer fecha de hoy como máximo
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById("exportDateTo").value = today;
+  document.getElementById("exportDateTo").max = today;
+  document.getElementById("exportDateFrom").max = today;
+  modal.classList.remove("hidden");
+}
+
+function closeExportModal() {
+  document.getElementById("exportModal").classList.add("hidden");
+}
+
+function executeExport() {
+  const format = document.getElementById("exportFormat").value;
+  const dateFrom = document.getElementById("exportDateFrom").value;
+  const dateTo = document.getElementById("exportDateTo").value;
+  const reportType = document.getElementById("exportReportType").value;
+
+  // Validar fechas
+  if (dateFrom && dateTo && new Date(dateFrom) > new Date(dateTo)) {
+    showToast("La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'", "error");
+    return;
+  }
+
+  // Filtrar datos según las fechas
+  let filteredData = getFilteredDataForExport(reportType, dateFrom, dateTo);
+  
+  if (filteredData.length === 0) {
+    showToast("No hay datos para exportar en el rango de fechas seleccionado", "error");
+    return;
+  }
+
+  // Exportar según el formato
+  if (format === "pdf") {
+    exportToPDF(reportType, filteredData, dateFrom, dateTo);
+  } else {
+    exportToExcel(reportType, filteredData, dateFrom, dateTo);
+  }
+
+  closeExportModal();
+  showToast(`Reporte exportado exitosamente en formato ${format.toUpperCase()}`, "success");
+}
+
+function getFilteredDataForExport(reportType, dateFrom, dateTo) {
+  let data = [];
+  
+  if (reportType === "movements") {
+    data = [...AppState.transactions];
+    
+    // Filtrar por fechas si se especificaron
+    if (dateFrom || dateTo) {
+      data = data.filter(transaction => {
+        const transDate = new Date(transaction.created_at || transaction.date);
+        const fromDate = dateFrom ? new Date(dateFrom) : new Date('1900-01-01');
+        const toDate = dateTo ? new Date(dateTo + 'T23:59:59') : new Date();
+        return transDate >= fromDate && transDate <= toDate;
+      });
+    }
+  } else if (reportType === "stock") {
+    data = AppState.products.filter(p => p.stock <= (p.min_stock || p.minStock || 0));
+  } else if (reportType === "category") {
+    const categoryStats = {};
+    (AppState.categories || []).forEach(category => {
+      const products = AppState.products.filter(p => p.category === category);
+      const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
+      const totalValue = products.reduce((sum, p) => sum + p.stock * p.price, 0);
+      categoryStats[category] = {
+        category,
+        products: products.length,
+        stock: totalStock,
+        value: totalValue
+      };
+    });
+    data = Object.values(categoryStats);
+  }
+  
+  return data;
+}
+
+function exportToPDF(reportType, data, dateFrom, dateTo) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  // Configuración del documento
+  doc.setFontSize(16);
+  doc.text('Ferretería El Tornillo', 20, 20);
+  doc.setFontSize(12);
+  doc.text('Reporte de ' + getReportTitle(reportType), 20, 30);
+  
+  // Agregar rango de fechas si se especificó
+  if (dateFrom || dateTo) {
+    const fromText = dateFrom ? formatDate(dateFrom) : 'Inicio';
+    const toText = dateTo ? formatDate(dateTo) : 'Hoy';
+    doc.text(`Período: ${fromText} - ${toText}`, 20, 40);
+  }
+  
+  doc.text(`Generado: ${formatDate(new Date())}`, 20, dateFrom || dateTo ? 50 : 40);
+  
+  const startY = dateFrom || dateTo ? 60 : 50;
+  
+  if (reportType === "movements") {
+    const tableData = data.map(t => [
+      formatDate(t.created_at || t.date),
+      t.product_code || t.productCode || '',
+      t.product_name || t.productName || '',
+      t.type.toUpperCase(),
+      t.quantity.toString(),
+      t.created_by_name || t.createdBy || '',
+      t.status.toUpperCase()
+    ]);
+    
+    doc.autoTable({
+      head: [['Fecha', 'Código', 'Producto', 'Tipo', 'Cantidad', 'Usuario', 'Estado']],
+      body: tableData,
+      startY: startY,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [29, 30, 30] }
+    });
+  } else if (reportType === "stock") {
+    const tableData = data.map(p => [
+      p.code,
+      p.name,
+      p.category,
+      p.stock.toString(),
+      (p.min_stock || p.minStock || 0).toString(),
+      p.location || ''
+    ]);
+    
+    doc.autoTable({
+      head: [['Código', 'Producto', 'Categoría', 'Stock Actual', 'Stock Mínimo', 'Ubicación']],
+      body: tableData,
+      startY: startY,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [29, 30, 30] }
+    });
+  } else if (reportType === "category") {
+    const tableData = data.map(c => [
+      c.category,
+      c.products.toString(),
+      c.stock.toString(),
+      formatCurrency(c.value)
+    ]);
+    
+    doc.autoTable({
+      head: [['Categoría', 'Productos', 'Stock Total', 'Valor Total']],
+      body: tableData,
+      startY: startY,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [29, 30, 30] }
+    });
+  }
+  
+  // Descargar el PDF
+  const fileName = `reporte_${reportType}_${new Date().toISOString().split('T')[0]}.pdf`;
+  doc.save(fileName);
+}
+
+function exportToExcel(reportType, data, dateFrom, dateTo) {
+  let worksheetData = [];
+  let headers = [];
+  
+  if (reportType === "movements") {
+    headers = ['Fecha', 'Código', 'Producto', 'Tipo', 'Cantidad', 'Usuario', 'Estado', 'Motivo'];
+    worksheetData = data.map(t => [
+      formatDate(t.created_at || t.date),
+      t.product_code || t.productCode || '',
+      t.product_name || t.productName || '',
+      t.type.toUpperCase(),
+      t.quantity,
+      t.created_by_name || t.createdBy || '',
+      t.status.toUpperCase(),
+      t.reason || t.motivo || ''
+    ]);
+  } else if (reportType === "stock") {
+    headers = ['Código', 'Producto', 'Categoría', 'Stock Actual', 'Stock Mínimo', 'Faltante', 'Ubicación'];
+    worksheetData = data.map(p => [
+      p.code,
+      p.name,
+      p.category,
+      p.stock,
+      p.min_stock || p.minStock || 0,
+      Math.max(0, (p.min_stock || p.minStock || 0) - p.stock),
+      p.location || ''
+    ]);
+  } else if (reportType === "category") {
+    headers = ['Categoría', 'Productos', 'Stock Total', 'Valor Total'];
+    worksheetData = data.map(c => [
+      c.category,
+      c.products,
+      c.stock,
+      c.value
+    ]);
+  }
+  
+  // Crear el libro de trabajo
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...worksheetData]);
+  
+  // Agregar información del reporte
+  const reportInfo = [
+    ['Ferretería El Tornillo'],
+    [`Reporte de ${getReportTitle(reportType)}`],
+    [`Generado: ${formatDate(new Date())}`]
+  ];
+  
+  if (dateFrom || dateTo) {
+    const fromText = dateFrom ? formatDate(dateFrom) : 'Inicio';
+    const toText = dateTo ? formatDate(dateTo) : 'Hoy';
+    reportInfo.push([`Período: ${fromText} - ${toText}`]);
+  }
+  
+  reportInfo.push(['']); // Línea vacía
+  
+  // Combinar información del reporte con los datos
+  const finalData = [...reportInfo, headers, ...worksheetData];
+  const finalWs = XLSX.utils.aoa_to_sheet(finalData);
+  
+  XLSX.utils.book_append_sheet(wb, finalWs, getReportTitle(reportType));
+  
+  // Descargar el archivo Excel
+  const fileName = `reporte_${reportType}_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+}
+
+function getReportTitle(reportType) {
+  const titles = {
+    movements: 'Movimientos de Inventario',
+    stock: 'Stock Bajo',
+    category: 'Por Categoría'
+  };
+  return titles[reportType] || 'Reporte';
 }

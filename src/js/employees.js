@@ -117,10 +117,13 @@ function renderEmployeesTable() {
   let html = `
         <div class="table-container">
             <table>
-                <thead><tr><th>Nombre</th><th>Puesto</th><th>Email</th><th>Teléfono</th><th>Salario</th><th>Acciones</th></tr></thead>
+                <thead><tr><th>Nombre</th><th>Puesto</th><th>Email</th><th>Teléfono</th><th>Salario</th><th>Estado</th><th>Acciones</th></tr></thead>
                 <tbody>
     `;
   employees.forEach((employee) => {
+    const isOnline = AppState.currentUser && AppState.currentUser.id === employee.user_id;
+    const statusClass = isOnline ? "badge-success" : "badge-danger";
+    const statusText = isOnline ? "Conectado" : "Desconectado";
     html += `
             <tr data-id="${employee.id}">
                 <td><strong>${employee.name}</strong></td>
@@ -128,6 +131,7 @@ function renderEmployeesTable() {
                 <td>${employee.email}</td>
                 <td>${employee.phone}</td>
                 <td>${formatCurrency(employee.salary)}</td>
+                <td><span class="badge ${statusClass}">${statusText}</span></td>
                 <td>
                     <div class="table-actions">
                         <button class="btn btn-sm btn-ghost btn-edit" title="Editar"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
@@ -199,7 +203,7 @@ async function showEmployeeModal(employeeId = null) {
     document.getElementById("employeeEmail").value = employee.email;
     document.getElementById("employeePhone").value = employee.phone;
     document.getElementById("employeeSalary").value = employee.salary;
-    document.getElementById("employeeStatus").value = employee.status;
+
     document.getElementById("employeeHireDate").value = employee.hire_date;
     document.getElementById("employeeAddress").value = employee.address;
   } else {
@@ -214,7 +218,7 @@ async function showEmployeeModal(employeeId = null) {
     passwordInput.placeholder = "Mínimo 6 caracteres";
 
     document.getElementById("employeeForm").reset();
-    document.getElementById("employeeStatus").value = "active";
+
     document.getElementById("employeeHireDate").value = new Date()
       .toISOString()
       .split("T")[0];
@@ -240,7 +244,7 @@ async function saveEmployee() {
     email: document.getElementById("employeeEmail").value,
     phone: document.getElementById("employeePhone").value,
     salary: document.getElementById("employeeSalary").value,
-    status: document.getElementById("employeeStatus").value,
+    status: "active",
     hire_date: document.getElementById("employeeHireDate").value,
     address: document.getElementById("employeeAddress").value,
   };

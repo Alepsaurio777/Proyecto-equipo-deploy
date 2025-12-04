@@ -185,19 +185,22 @@ async function apiLoadEmployees() {
 
 async function apiCreateEmployee(employeeData) {
   try {
+    console.log('Enviando datos del empleado:', employeeData);
     const response = await fetch(`${API_BASE_URL}/employees.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(employeeData),
     });
+    console.log('Respuesta del servidor:', response.status, response.statusText);
     const data = await response.json();
+    console.log('Datos recibidos:', data);
     if (data.success) {
       await apiLoadEmployees();
     }
     return data;
   } catch (error) {
     console.error("Error al crear empleado:", error);
-    return { success: false, message: "Error de conexión" };
+    return { success: false, message: "Error de conexión: " + error.message };
   }
 }
 
