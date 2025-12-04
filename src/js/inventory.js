@@ -83,13 +83,7 @@ async function updateProduct(productId, productData) {
   return result.success;
 }
 
-async function restoreProduct(productId) {
-  const result = await apiRestoreProduct(productId);
-  if (!result.success) {
-    showToast(result.message, "error");
-  }
-  return result.success;
-}
+
 
 async function deleteProduct(productId) {
   const result = await apiDeleteProduct(productId);
@@ -238,7 +232,6 @@ async function saveProduct() {
   if (success) {
     closeProductModal();
     renderProductsTable();
-    renderInactiveProductsTable();
     showToast(
       currentEditingProduct ? "Producto actualizado" : "Producto creado exitosamente",
       "success"
@@ -252,36 +245,17 @@ async function confirmDeleteProduct(productId) {
     if (success) {
       showToast("Producto eliminado correctamente", "success");
       renderProductsTable();
-      renderInactiveProductsTable();
     }
   }
 }
 
-async function confirmRestoreProduct(productId) {
-  if (confirm("¿Estás seguro de RESTAURAR este producto?")) {
-    const success = await restoreProduct(productId);
-    if (success) {
-      showToast("Producto restaurado", "success");
-      renderProductsTable();
-      renderInactiveProductsTable();
-    }
-  }
-}
+
 
 function closeTransactionModal() {
   document.getElementById("transactionModal").classList.add("hidden");
 }
 
-async function confirmPermanentDeleteProduct(productId) {
-  if (confirm("¿Estás COMPLETAMENTE seguro de ELIMINAR PERMANENTEMENTE este producto? Esta acción NO se puede deshacer y eliminará todos los datos asociados.")) {
-    const success = await deleteProduct(productId);
-    if (success) {
-      showToast("Producto eliminado permanentemente", "success");
-      renderProductsTable();
-      renderInactiveProductsTable();
-    }
-  }
-}
+
 
 function showTransactionModal() {
   const modal = document.getElementById("transactionModal");
@@ -419,62 +393,7 @@ function renderProductsTable() {
   });
 }
 
-function renderInactiveProductsTable() {
-  const container = document.getElementById("inactiveProductsTableContainer");
-  const products = AppState.inactiveProducts || [];
-  if (products.length === 0) {
-    container.innerHTML =
-      '<div class="empty-state"><div class="empty-state-icon">🗑️</div><p>No hay productos inactivos</p></div>';
-    return;
-  }
-  let html = `
-        <div class="table-container">
-            <table>
-                <thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Ubicación</th><th>Acciones</th></tr></thead>
-                <tbody>
-    `;
-  products.forEach((product) => {
-    html += `
-            <tr data-id="${product.id}">
-                <td><strong>${product.code}</strong></td>
-                <td>${product.name}</td>
-                <td><span class="badge badge-primary">${
-                  product.category
-                }</span></td>
-                <td>${formatCurrency(product.price)}</td>
-                <td>${product.location}</td>
-                <td>
-                    <div class="table-actions">
-                        <button class="btn btn-sm btn-ghost btn-edit-inactive" title="Editar"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                        <button class="btn btn-sm btn-success btn-restore" title="Restaurar"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></button>
-              <button class="btn btn-sm btn-danger btn-delete-permanent" title="Eliminar Permanentemente"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
-                    </div>
-                </td>
-            </tr>
-        `;
-  });
-  html += "</tbody></table></div>";
-  container.innerHTML = html;
 
-  container.querySelectorAll(".btn-edit-inactive").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const productId = e.currentTarget.closest("tr").dataset.id;
-      showProductModal(productId, "inactive");
-    });
-  });
-  container.querySelectorAll(".btn-restore").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const productId = e.currentTarget.closest("tr").dataset.id;
-      confirmRestoreProduct(productId);
-    });
-  });
-    container.querySelectorAll(".btn-delete-permanent").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const productId = e.currentTarget.closest("tr").dataset.id;
-        confirmPermanentDeleteProduct(productId);
-      });
-    });
-}
 
 function renderTransactionsTable() {
   const container = document.getElementById("transactionsTableContainer");
@@ -567,9 +486,8 @@ function renderInventoryModule() {
         </div>
         <div class="tabs">
             <div class="tab-list">
-                <button class="tab-button active" data-tab="products">📦 Productos Activos</button>
+                <button class="tab-button active" data-tab="products">📦 Productos</button>
                 <button class="tab-button" data-tab="movements">🔄 Movimientos</button>
-                <button class="tab-button" data-tab="inactive-products">🗑️ Productos Inactivos</button>
             </div>
             <div id="productsTab" class="tab-content active">
                 <div class="card" style="margin-bottom: 1rem;">
@@ -600,9 +518,7 @@ function renderInventoryModule() {
                 </div>
                 <div id="transactionsTableContainer"></div>
             </div>
-            <div id="inactive-productsTab" class="tab-content">
-                 <div id="inactiveProductsTableContainer"></div>
-            </div>
+
         </div>
     `;
 
@@ -629,12 +545,13 @@ function renderInventoryModule() {
   document
     .getElementById("closeTransactionModalBtn")
     .addEventListener("click", () => closeTransactionModal());
-  // Nota: El listener de saveTransactionBtn ya está en app.js
+  document
+    .getElementById("saveTransactionBtn")
+    .addEventListener("click", () => saveTransaction());
 
   setupTabListeners();
   renderProductsTable();
   renderTransactionsTable();
-  renderInactiveProductsTable();
 }
 
 function filterInventory() {
@@ -643,93 +560,6 @@ function filterInventory() {
   renderProductsTable();
 }
 
-// Nota: renderProductsTable() está definida en la línea ~330
 
-function renderInactiveProductsTable() {
-  const container = document.getElementById("inactiveProductsTableContainer");
-  const products = AppState.inactiveProducts || [];
-  if (products.length === 0) {
-    container.innerHTML =
-      '<div class="empty-state"><div class="empty-state-icon">🗑️</div><p>No hay productos inactivos</p></div>';
-    return;
-  }
-  let html = `
-        <div class="table-container">
-            <table>
-                <thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Ubicación</th><th>Acciones</th></tr></thead>
-                <tbody>
-    `;
-  products.forEach((product) => {
-    html += `
-            <tr data-id="${product.id}">
-                <td><strong>${product.code}</strong></td>
-                <td>${product.name}</td>
-                <td><span class="badge badge-primary">${
-                  product.category
-                }</span></td>
-                <td>${formatCurrency(product.price)}</td>
-                <td>${product.location}</td>
-                <td>
-                    <div class="table-actions">
-                        <button class="btn btn-sm btn-ghost btn-edit-inactive" title="Editar"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                        <button class="btn btn-sm btn-success btn-restore" title="Restaurar"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></button>
-                    </div>
-                </td>
-            </tr>
-        `;
-  });
-  html += "</tbody></table></div>";
-  container.innerHTML = html;
 
-  container.querySelectorAll(".btn-edit-inactive").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const productId = e.currentTarget.closest("tr").dataset.id;
-      showProductModal(productId, "inactive");
-    });
-  });
-  container.querySelectorAll(".btn-restore").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const productId = e.currentTarget.closest("tr").dataset.id;
-      confirmRestoreProduct(productId);
-    });
-  });
-}
 
-// --- Modales de Producto ---
-// Nota: renderTransactionsTable() ya está definida arriba (línea ~427)
-function showTransactionModal() {
-  const modal = document.getElementById("transactionModal");
-  const productSelect = document.getElementById("transactionProduct");
-  productSelect.innerHTML = '<option value="">Selecciona un producto</option>';
-  AppState.products.forEach((product) => {
-    productSelect.innerHTML += `<option value="${product.id}">${product.name} (${product.code})</option>`;
-  });
-  document.getElementById("transactionForm").reset();
-  modal.classList.remove("hidden");
-}
-
-// (La función closeTransactionModal y saveTransaction ya están definidas más arriba)
-
-async function confirmApproveTransaction(transactionId) {
-  if (
-    confirm(
-      "¿Estás seguro de APROBAR este movimiento? El stock se actualizará."
-    )
-  ) {
-    const success = await approveTransaction(transactionId);
-    if (success) {
-      showToast("Movimiento aprobado correctamente", "success");
-      renderTransactionsTable();
-    }
-  }
-}
-
-async function confirmRejectTransaction(transactionId) {
-  if (confirm("¿Estás seguro de RECHAZAR este movimiento?")) {
-    const success = await rejectTransaction(transactionId);
-    if (success) {
-      showToast("Movimiento rechazado", "success");
-      renderTransactionsTable();
-    }
-  }
-}

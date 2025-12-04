@@ -252,7 +252,7 @@ function handleDeleteEmployee(mysqli $conn): void
         jsonResponse(false, 'ID de empleado es requerido');
     }
 
-    $stmt = $conn->prepare("UPDATE empleado SET status = 'inactive' WHERE id_empleado = ?");
+    $stmt = $conn->prepare('DELETE FROM empleado WHERE id_empleado = ?');
     $stmt->bind_param('i', $employeeId);
 
     if (!$stmt->execute()) {
@@ -261,7 +261,7 @@ function handleDeleteEmployee(mysqli $conn): void
 
     if ($stmt->affected_rows === 0) {
         $stmt->close();
-        jsonResponse(false, 'El empleado no fue encontrado o ya estaba inactivo');
+        jsonResponse(false, 'El empleado no fue encontrado');
     }
 
     $stmt->close();

@@ -21,8 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
 async function initApp() {
   // Cargar datos iniciales
   await Promise.all([
-    apiLoadProducts("active"),
-    apiLoadProducts("inactive"),
+    apiLoadProducts(),
     apiLoadEmployees(),
     apiLoadTransactions(),
   ]);

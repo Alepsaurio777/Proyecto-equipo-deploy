@@ -34,14 +34,6 @@ $conn->close();
 
 function handleGetProducts(mysqli $conn): void
 {
-    $status = isset($_GET['status']) ? sanitizeInput($_GET['status']) : 'active';
-    $filterByActive = null;
-    if ($status === 'active') {
-        $filterByActive = 1;
-    } elseif ($status === 'inactive') {
-        $filterByActive = 0;
-    }
-
     $sql = "
         SELECT 
             p.id_producto,
@@ -60,32 +52,16 @@ function handleGetProducts(mysqli $conn): void
             c.nombre_categoria
         FROM producto p
         LEFT JOIN categoria c ON c.id_categoria = p.id_categoria
+        ORDER BY p.nombre_producto ASC
     ";
 
-    if ($filterByActive !== null) {
-        $sql .= " WHERE p.activo = ?";
-    }
-
-    $sql .= " ORDER BY p.nombre_producto ASC";
-
-    if ($filterByActive !== null) {
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('i', $filterByActive);
-        $stmt->execute();
-        $result = $stmt->get_result();
-    } else {
-        $result = $conn->query($sql);
-    }
+    $result = $conn->query($sql);
 
     $products = [];
     if ($result) {
         while ($row = $result->fetch_assoc()) {
             $products[] = mapProductRow($row);
         }
-    }
-
-    if (isset($stmt)) {
-        $stmt->close();
     }
 
     jsonResponse(true, 'Productos obtenidos', $products);
@@ -252,21 +228,21 @@ function handleDeleteProduct(mysqli $conn): void
         jsonResponse(false, 'El ID del producto es requerido');
     }
 
-    $stmt = $conn->prepare('UPDATE producto SET activo = 0 WHERE id_producto = ?');
+    $stmt = $conn->prepare('DELETE FROM producto WHERE id_producto = ?');
     $stmt->bind_param('i', $productId);
 
     if (!$stmt->execute()) {
-        jsonResponse(false, 'Error al desactivar el producto: ' . $stmt->error);
+        jsonResponse(false, 'Error al eliminar el producto: ' . $stmt->error);
     }
 
     $affected = $stmt->affected_rows;
     $stmt->close();
 
     if ($affected === 0) {
-        jsonResponse(false, 'No se encontró el producto a desactivar');
+        jsonResponse(false, 'No se encontró el producto a eliminar');
     }
 
-    jsonResponse(true, 'Producto desactivado exitosamente');
+    jsonResponse(true, 'Producto eliminado exitosamente');
 }
 
 function productCodeExists(mysqli $conn, string $code, ?int $excludeId = null): bool

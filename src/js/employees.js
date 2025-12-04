@@ -69,20 +69,20 @@ function renderEmployeesModule() {
                 <div class="kpi-description">Personal registrado</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-header"><span class="kpi-label">Empleados Activos</span><span class="kpi-icon">✓</span></div>
-                <div class="kpi-value">${
-                  AppState.employees.filter((e) => e.status === "active").length
-                }</div>
-                <div class="kpi-description">En servicio actualmente</div>
-            </div>
-            <div class="kpi-card">
                 <div class="kpi-header"><span class="kpi-label">Nómina Total</span><span class="kpi-icon">💰</span></div>
                 <div class="kpi-value">${formatCurrency(
                   AppState.employees
-                    .filter((e) => e.status === "active")
                     .reduce((sum, e) => sum + parseFloat(e.salary || 0), 0)
                 )}</div>
                 <div class="kpi-description">Salarios mensuales</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-label">Promedio Salarial</span><span class="kpi-icon">📊</span></div>
+                <div class="kpi-value">${formatCurrency(
+                  AppState.employees.length > 0 ? 
+                  AppState.employees.reduce((sum, e) => sum + parseFloat(e.salary || 0), 0) / AppState.employees.length : 0
+                )}</div>
+                <div class="kpi-description">Salario promedio</div>
             </div>
         </div>
         <div class="card" style="margin-bottom: 1rem;">
@@ -90,11 +90,7 @@ function renderEmployeesModule() {
                 <div style="flex: 1;">
                     <input type="text" id="employeeSearch" class="form-input" placeholder="Buscar por nombre, puesto o email..." oninput="filterEmployees()">
                 </div>
-                <select id="statusFilter" class="form-select" style="width: 200px;" onchange="filterEmployees()">
-                    <option value="">Todos los estados</option>
-                    <option value="active">Activos</option>
-                    <option value="inactive">Inactivos</option>
-                </select>
+
             </div>
         </div>
         <div id="employeesTableContainer"></div>
@@ -103,11 +99,8 @@ function renderEmployeesModule() {
 }
 
 let employeeSearchTerm = "";
-let employeeStatusFilter = "";
-
 function filterEmployees() {
   employeeSearchTerm = document.getElementById("employeeSearch").value;
-  employeeStatusFilter = document.getElementById("statusFilter").value;
   renderEmployeesTable();
 }
 
@@ -115,7 +108,6 @@ function renderEmployeesTable() {
   const container = document.getElementById("employeesTableContainer");
   const employees = getEmployees({
     searchTerm: employeeSearchTerm,
-    status: employeeStatusFilter,
   });
   if (employees.length === 0) {
     container.innerHTML =
@@ -125,13 +117,10 @@ function renderEmployeesTable() {
   let html = `
         <div class="table-container">
             <table>
-                <thead><tr><th>Nombre</th><th>Puesto</th><th>Email</th><th>Teléfono</th><th>Salario</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <thead><tr><th>Nombre</th><th>Puesto</th><th>Email</th><th>Teléfono</th><th>Salario</th><th>Acciones</th></tr></thead>
                 <tbody>
     `;
   employees.forEach((employee) => {
-    const statusClass =
-      employee.status === "active" ? "badge-success" : "badge-danger";
-    const statusText = employee.status === "active" ? "Activo" : "Inactivo";
     html += `
             <tr data-id="${employee.id}">
                 <td><strong>${employee.name}</strong></td>
@@ -139,7 +128,6 @@ function renderEmployeesTable() {
                 <td>${employee.email}</td>
                 <td>${employee.phone}</td>
                 <td>${formatCurrency(employee.salary)}</td>
-                <td><span class="badge ${statusClass}">${statusText}</span></td>
                 <td>
                     <div class="table-actions">
                         <button class="btn btn-sm btn-ghost btn-edit" title="Editar"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
@@ -320,7 +308,7 @@ async function saveEmployee() {
 }
 
 async function confirmDeleteEmployee(employeeId) {
-  if (confirm("¿Estás seguro de eliminar este empleado?")) {
+  if (confirm("¿Estás seguro de ELIMINAR este empleado? Esta acción no se puede deshacer.")) {
     const success = await deleteEmployee(employeeId);
     if (success) {
       showToast("Empleado eliminado correctamente", "success");

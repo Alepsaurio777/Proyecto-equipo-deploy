@@ -151,44 +151,78 @@ function handleUpdateTransaction(mysqli $conn): void
         jsonResponse(false, 'Datos inválidos');
     }
 
-    $required = ['id', 'status', 'userId'];
+    $required = ['id', 'action', 'user_id'];
     foreach ($required as $field) {
         if (empty($payload[$field])) {
             jsonResponse(false, "El campo '$field' es requerido.");
         }
     }
 
-    $status = strtolower($payload['status']);
-    if (!in_array($status, ['aprobada', 'rechazada'], true)) {
-        jsonResponse(false, 'Estado no válido.');
+    $action = strtolower($payload['action']);
+    if (!in_array($action, ['approve', 'reject'], true)) {
+        jsonResponse(false, 'Acción no válida.');
     }
 
-    $stmt = $conn->prepare('
-        UPDATE movimiento_inventario
-        SET status = ?,
-            aprobado_por = ?
-        WHERE id_movimiento = ?
-          AND status = \'pendiente\'
-    ');
-
-    $userId = intval($payload['userId']);
+    $status = $action === 'approve' ? 'aprobada' : 'rechazada';
     $transactionId = intval($payload['id']);
+    $userId = intval($payload['user_id']);
 
-    $stmt->bind_param('sii', $status, $userId, $transactionId);
+    // Si es aprobación, actualizar el stock del producto
+    if ($action === 'approve') {
+        $conn->begin_transaction();
+        try {
+            // Obtener datos de la transacción
+            $stmt = $conn->prepare('SELECT id_producto, tipo_movimiento, cantidad FROM movimiento_inventario WHERE id_movimiento = ? AND status = "pendiente"');
+            $stmt->bind_param('i', $transactionId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $transaction = $result->fetch_assoc();
+            $stmt->close();
 
-    if (!$stmt->execute()) {
-        jsonResponse(false, 'Error al actualizar la transacción: ' . $stmt->error);
-    }
+            if (!$transaction) {
+                throw new Exception('Transacción no encontrada o ya procesada');
+            }
 
-    if ($stmt->affected_rows === 0) {
+            // Actualizar stock del producto
+            $productId = $transaction['id_producto'];
+            $quantity = $transaction['cantidad'];
+            $type = $transaction['tipo_movimiento'];
+
+            if ($type === 'entrada') {
+                $stmt = $conn->prepare('UPDATE producto SET stock_actual = stock_actual + ? WHERE id_producto = ?');
+            } else {
+                $stmt = $conn->prepare('UPDATE producto SET stock_actual = stock_actual - ? WHERE id_producto = ?');
+            }
+            $stmt->bind_param('ii', $quantity, $productId);
+            $stmt->execute();
+            $stmt->close();
+
+            // Actualizar estado de la transacción
+            $stmt = $conn->prepare('UPDATE movimiento_inventario SET status = ?, aprobado_por = ?, fecha_aprobacion = NOW() WHERE id_movimiento = ?');
+            $stmt->bind_param('sii', $status, $userId, $transactionId);
+            $stmt->execute();
+            $stmt->close();
+
+            $conn->commit();
+        } catch (Exception $e) {
+            $conn->rollback();
+            jsonResponse(false, 'Error al procesar la transacción: ' . $e->getMessage());
+        }
+    } else {
+        // Solo rechazar la transacción
+        $stmt = $conn->prepare('UPDATE movimiento_inventario SET status = ?, aprobado_por = ?, fecha_aprobacion = NOW() WHERE id_movimiento = ? AND status = "pendiente"');
+        $stmt->bind_param('sii', $status, $userId, $transactionId);
+        $stmt->execute();
+        
+        if ($stmt->affected_rows === 0) {
+            $stmt->close();
+            jsonResponse(false, 'No se pudo actualizar la transacción (puede que ya no esté pendiente)');
+        }
         $stmt->close();
-        jsonResponse(false, 'No se pudo actualizar la transacción (puede que ya no esté pendiente)');
     }
-
-    $stmt->close();
 
     $transaction = getTransactionById($conn, $transactionId);
-    jsonResponse(true, 'Transacción actualizada exitosamente', $transaction);
+    jsonResponse(true, 'Transacción ' . ($action === 'approve' ? 'aprobada' : 'rechazada') . ' exitosamente', $transaction);
 }
 
 function productExists(mysqli $conn, int $productId): bool

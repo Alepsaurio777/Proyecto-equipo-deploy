@@ -11,12 +11,24 @@
  * 4. Ejecuta el archivo 'database.sql' para crear las tablas
  */
 
+// ==================== CARGAR VARIABLES DE ENTORNO ====================
+// Cargar archivo .env
+$envFile = __DIR__ . '/../.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
+            list($key, $value) = explode('=', $line, 2);
+            $_ENV[trim($key)] = trim($value);
+        }
+    }
+}
+
 // ==================== CONFIGURACIÓN DE CONEXIÓN ====================
-// TODO: Cambia estos valores según tu configuración local
-define('DB_HOST', 'localhost');        // Generalmente 'localhost' o '127.0.0.1'
-define('DB_USER', 'root');             // Usuario de tu MySQL (por defecto 'root' en XAMPP)
-define('DB_PASS', 'parra');                 // Contraseña de MySQL (vacío por defecto en XAMPP)
-define('DB_NAME', 'ferreteria_db');    // Nombre de la base de datos
+define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? 'parra');
+define('DB_NAME', $_ENV['DB_NAME'] ?? 'ferreteria_db');
 
 // ==================== CONEXIÓN A LA BASE DE DATOS ====================
 function getConnection()

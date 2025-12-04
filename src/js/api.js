@@ -4,25 +4,19 @@
 const API_BASE_URL = "http://localhost/Proyecto-de-Equipo/api";
 
 // ==================== PRODUCTOS ====================
-async function apiLoadProducts(status = "active") {
+async function apiLoadProducts() {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/products.php?status=${status}`
-    );
+    const response = await fetch(`${API_BASE_URL}/products.php`);
     const data = await response.json();
     if (data.success) {
-      if (status === "active") {
-        AppState.products = data.data;
-      } else {
-        AppState.inactiveProducts = data.data;
-      }
+      AppState.products = data.data;
       return { success: true, data: data.data };
     } else {
-      console.error(`Error al cargar productos (${status}):`, data.message);
+      console.error("Error al cargar productos:", data.message);
       return { success: false, message: data.message };
     }
   } catch (error) {
-    console.error(`Error de red al cargar productos (${status}):`, error);
+    console.error("Error de red al cargar productos:", error);
     return { success: false, message: "Error de conexión" };
   }
 }
@@ -36,7 +30,7 @@ async function apiCreateProduct(productData) {
     });
     const data = await response.json();
     if (data.success) {
-      await apiLoadProducts("active");
+      await apiLoadProducts();
     }
     return data;
   } catch (error) {
@@ -54,7 +48,7 @@ async function apiUpdateProduct(productId, productData) {
     });
     const data = await response.json();
     if (data.success) {
-      await apiLoadProducts("active");
+      await apiLoadProducts();
     }
     return data;
   } catch (error) {
@@ -72,8 +66,7 @@ async function apiDeleteProduct(productId) {
     });
     const data = await response.json();
     if (data.success) {
-      await apiLoadProducts("active");
-      await apiLoadProducts("inactive");
+      await apiLoadProducts();
     }
     return data;
   } catch (error) {
@@ -82,24 +75,7 @@ async function apiDeleteProduct(productId) {
   }
 }
 
-async function apiRestoreProduct(productId) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/products.php`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: productId, status: "active" }),
-    });
-    const data = await response.json();
-    if (data.success) {
-      await apiLoadProducts("active");
-      await apiLoadProducts("inactive");
-    }
-    return data;
-  } catch (error) {
-    console.error("Error al restaurar producto:", error);
-    return { success: false, message: "Error de conexión" };
-  }
-}
+
 
 // ==================== TRANSACCIONES ====================
 async function apiLoadTransactions() {
@@ -158,7 +134,7 @@ async function apiApproveTransaction(transactionId) {
     const data = await response.json();
     if (data.success) {
       await apiLoadTransactions();
-      await apiLoadProducts("active");
+      await apiLoadProducts();
     }
     return data;
   } catch (error) {
