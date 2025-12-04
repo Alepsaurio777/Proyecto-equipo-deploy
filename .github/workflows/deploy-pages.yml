@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main, fusion-prueba]
+    branches: [main, fusion-prueba, gh-pages-deploy]
   workflow_dispatch:
 
 permissions:
