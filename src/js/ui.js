@@ -1,5 +1,32 @@
 // ==================== INTERFAZ DE USUARIO ====================
 
+// Event listener global para tecla ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        // Cerrar modales abiertos
+        const modals = [
+            'productModal',
+            'employeeModal', 
+            'transactionModal',
+            'editProfileModal',
+            'changePasswordModal',
+            'passwordRecoveryModal',
+            'exportModal'
+        ];
+        
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal && !modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+                // Limpiar estado si es necesario
+                if (modalId === 'employeeModal') {
+                    currentEditingEmployee = null;
+                }
+            }
+        });
+    }
+});
+
 // Renderizar sidebar
 function renderSidebar() {
     const nav = document.getElementById('sidebarNav');

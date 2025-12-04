@@ -167,11 +167,14 @@ async function showEmployeeModal(employeeId = null) {
     await apiLoadRoles();
   }
 
-  // Poblar el dropdown de roles
+  // Poblar el dropdown de roles (sin duplicados)
   const positionSelect = document.getElementById("employeePosition");
   positionSelect.innerHTML = '<option value="">Selecciona un rol</option>';
-  AppState.roles.forEach((role) => {
-    positionSelect.innerHTML += `<option value="${role.name}">${role.name}</option>`;
+  
+  // Obtener roles únicos
+  const uniqueRoles = [...new Set(AppState.roles.map(role => role.name))];
+  uniqueRoles.forEach((roleName) => {
+    positionSelect.innerHTML += `<option value="${roleName}">${roleName}</option>`;
   });
 
   const modal = document.getElementById("employeeModal");
