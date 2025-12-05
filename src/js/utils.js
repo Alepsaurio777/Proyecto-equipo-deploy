@@ -54,6 +54,11 @@ function hasPermission(module) {
   return permissions && permissions.includes(module);
 }
 
+// Función para validar permisos de eliminación (admin y supervisor)
+function canDelete() {
+  return AppState.currentUser && (AppState.currentUser.role === 'admin' || AppState.currentUser.role === 'cashier');
+}
+
 // Función para cargar de LocalStorage
 function loadFromLocalStorage(key) {
   try {

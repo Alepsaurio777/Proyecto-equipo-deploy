@@ -13,7 +13,7 @@ const AppState = {
   categories: [],
   rolePermissions: {
     admin: ["inventory", "reports", "employees", "notifications"],
-    cashier: ["inventory", "reports"],
-    warehouse: ["inventory", "reports"],
+    cashier: ["inventory", "reports", "employees"],
+    warehouse: ["inventory"],
   },
 };

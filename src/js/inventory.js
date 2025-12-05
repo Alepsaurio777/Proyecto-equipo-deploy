@@ -4,6 +4,14 @@ let inventoryFilterCategory = "";
 let inventorySearchTerm = "";
 let currentEditingProduct = null;
 
+// Función para limpiar el módulo de inventario
+function cleanupInventoryModule() {
+  if (window.originalShowToast) {
+    window.showToast = window.originalShowToast;
+    delete window.originalShowToast;
+  }
+}
+
 // ==================== 1. GETTERS DE DATOS LOCALES ====================
 // Nota: Las funciones de carga de datos ahora están en api.js
 
@@ -95,25 +103,21 @@ async function deleteProduct(productId) {
 
 async function createTransaction(transactionData) {
   const result = await apiCreateTransaction(transactionData);
-  if (!result.success) {
-    showToast(result.message, "error");
-  }
   return result.success;
 }
 
 async function approveTransaction(transactionId) {
   const result = await apiApproveTransaction(transactionId);
-  if (!result.success) {
-    showToast(result.message, "error");
-  }
   return result.success;
 }
 
 async function rejectTransaction(transactionId) {
   const result = await apiRejectTransaction(transactionId);
-  if (!result.success) {
-    showToast(result.message, "error");
-  }
+  return result.success;
+}
+
+async function deleteTransaction(transactionId) {
+  const result = await apiDeleteTransaction(transactionId);
   return result.success;
 }
 
@@ -279,26 +283,22 @@ async function saveTransaction() {
 
   // Validar campos requeridos
   if (!transactionData.productId || !transactionData.quantity || !transactionData.type) {
-    showToast("Por favor completa los campos requeridos", "error");
     return;
   }
 
   // Validar cantidad: debe ser positiva
   if (Number.isNaN(transactionData.quantity) || transactionData.quantity <= 0) {
-    showToast("La cantidad debe ser un número mayor que 0", "error");
     return;
   }
 
   // Verificar que el producto exista
   const product = AppState.products.find((p) => p.id === transactionData.productId);
   if (!product) {
-    showToast("El producto seleccionado no existe", "error");
     return;
   }
 
   // Si es salida, verificar que haya stock suficiente
   if (transactionData.type === "salida" && product.stock < transactionData.quantity) {
-    showToast(`Stock insuficiente. Stock disponible: ${product.stock}`, "error");
     return;
   }
 
@@ -307,27 +307,27 @@ async function saveTransaction() {
   if (success) {
     closeTransactionModal();
     renderTransactionsTable();
-    showToast("Movimiento registrado y pendiente de aprobación", "success");
   }
 }
 
 async function confirmApproveTransaction(transactionId) {
-  if (confirm("¿Estás seguro de APROBAR este movimiento?")) {
-    const success = await approveTransaction(transactionId);
-    if (success) {
-      showToast("Movimiento aprobado", "success");
-      renderTransactionsTable();
-    }
+  const success = await approveTransaction(transactionId);
+  if (success) {
+    renderTransactionsTable();
   }
 }
 
 async function confirmRejectTransaction(transactionId) {
-  if (confirm("¿Estás seguro de RECHAZAR este movimiento?")) {
-    const success = await rejectTransaction(transactionId);
-    if (success) {
-      showToast("Movimiento rechazado", "success");
-      renderTransactionsTable();
-    }
+  const success = await rejectTransaction(transactionId);
+  if (success) {
+    renderTransactionsTable();
+  }
+}
+
+async function confirmDeleteTransaction(transactionId) {
+  const success = await deleteTransaction(transactionId);
+  if (success) {
+    renderTransactionsTable();
   }
 }
 
@@ -370,7 +370,7 @@ function renderProductsTable() {
                 <td>
                     <div class="table-actions">
                         <button class="btn btn-sm btn-ghost btn-edit" title="Editar"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-              <button class="btn btn-sm btn-danger btn-delete" title="Eliminar"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+              ${canDelete() ? '<button class="btn btn-sm btn-danger btn-delete" title="Eliminar"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>' : ''}
                     </div>
                 </td>
             </tr>
@@ -441,6 +441,7 @@ function renderTransactionsTable() {
                         `
                             : ""
                         }
+                        <button class="btn btn-sm btn-danger btn-delete-transaction" data-id="${transaction.id}" title="Eliminar">🗑️</button>
                     </div>
                 </td>
             </tr>
@@ -461,6 +462,12 @@ function renderTransactionsTable() {
       confirmRejectTransaction(transactionId);
     });
   });
+  container.querySelectorAll(".btn-delete-transaction").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const transactionId = e.currentTarget.dataset.id;
+      confirmDeleteTransaction(transactionId);
+    });
+  });
 }
 
 // ==================== 6. FUNCIÓN PRINCIPAL DEL MÓDULO ====================
@@ -472,6 +479,10 @@ function filterInventory() {
 }
 
 function renderInventoryModule() {
+  // Deshabilitar mensajes emergentes en inventario
+  window.originalShowToast = window.showToast;
+  window.showToast = () => {};
+  
   const content = document.getElementById("mainContent");
   content.innerHTML = `
         <div class="content-header-actions">
@@ -522,32 +533,20 @@ function renderInventoryModule() {
         </div>
     `;
 
-  // Attach listeners
-  document
-    .getElementById("newProductBtn")
-    .addEventListener("click", () => showProductModal());
-  document
-    .getElementById("productSearch")
-    .addEventListener("input", () => filterInventory());
-  document
-    .getElementById("categoryFilter")
-    .addEventListener("change", () => filterInventory());
-
-  document
-    .getElementById("closeProductModalBtn")
-    .addEventListener("click", () => closeProductModal());
-  document
-    .getElementById("saveProductBtn")
-    .addEventListener("click", () => saveProduct());
-  document
-    .getElementById("newTransactionBtn")
-    .addEventListener("click", () => showTransactionModal());
-  document
-    .getElementById("closeTransactionModalBtn")
-    .addEventListener("click", () => closeTransactionModal());
-  document
-    .getElementById("saveTransactionBtn")
-    .addEventListener("click", () => saveTransaction());
+  // Event listeners únicos usando delegación
+  document.getElementById("newProductBtn").onclick = () => showProductModal();
+  document.getElementById("productSearch").oninput = () => filterInventory();
+  document.getElementById("categoryFilter").onchange = () => filterInventory();
+  document.getElementById("closeProductModalBtn").onclick = () => closeProductModal();
+  document.getElementById("saveProductBtn").onclick = () => saveProduct();
+  document.getElementById("newTransactionBtn").onclick = () => showTransactionModal();
+  document.getElementById("closeTransactionModalBtn").onclick = () => closeTransactionModal();
+  document.getElementById("saveTransactionBtn").onclick = (e) => {
+    e.target.disabled = true;
+    saveTransaction().finally(() => {
+      e.target.disabled = false;
+    });
+  };
 
   setupTabListeners();
   renderProductsTable();

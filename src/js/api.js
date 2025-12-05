@@ -165,6 +165,24 @@ async function apiRejectTransaction(transactionId) {
   }
 }
 
+async function apiDeleteTransaction(transactionId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/transactions.php`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: transactionId }),
+    });
+    const data = await response.json();
+    if (data.success) {
+      await apiLoadTransactions();
+    }
+    return data;
+  } catch (error) {
+    console.error("Error al eliminar transacción:", error);
+    return { success: false, message: "Error de conexión" };
+  }
+}
+
 // ==================== EMPLEADOS ====================
 async function apiLoadEmployees() {
   try {

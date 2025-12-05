@@ -23,6 +23,8 @@ if ($method === 'GET') {
     handleCreateTransaction($conn);
 } elseif ($method === 'PUT') {
     handleUpdateTransaction($conn);
+} elseif ($method === 'DELETE') {
+    handleDeleteTransaction($conn);
 } else {
     jsonResponse(false, 'Método no soportado');
 }
@@ -223,6 +225,36 @@ function handleUpdateTransaction(mysqli $conn): void
 
     $transaction = getTransactionById($conn, $transactionId);
     jsonResponse(true, 'Transacción ' . ($action === 'approve' ? 'aprobada' : 'rechazada') . ' exitosamente', $transaction);
+}
+
+function handleDeleteTransaction(mysqli $conn): void
+{
+    $payload = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($payload)) {
+        jsonResponse(false, 'Datos inválidos');
+    }
+
+    if (empty($payload['id'])) {
+        jsonResponse(false, 'ID de transacción requerido');
+    }
+
+    $transactionId = intval($payload['id']);
+
+    $stmt = $conn->prepare('DELETE FROM movimiento_inventario WHERE id_movimiento = ?');
+    $stmt->bind_param('i', $transactionId);
+    
+    if (!$stmt->execute()) {
+        $stmt->close();
+        jsonResponse(false, 'Error al eliminar la transacción: ' . $conn->error);
+    }
+
+    if ($stmt->affected_rows === 0) {
+        $stmt->close();
+        jsonResponse(false, 'Transacción no encontrada');
+    }
+
+    $stmt->close();
+    jsonResponse(true, 'Transacción eliminada exitosamente');
 }
 
 function productExists(mysqli $conn, int $productId): bool
