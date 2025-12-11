@@ -1,0 +1,39 @@
+<!-- MODAL: EXPORTAR REPORTE -->
+<div id="exportModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>📄 Exportar Reporte</h3>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Formato de Exportación *</label>
+                <select id="exportFormat" class="form-select" required>
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Fecha Desde</label>
+                <input type="date" id="exportDateFrom" class="form-input" />
+                <small class="text-muted">Dejar vacío para incluir todos los registros</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Fecha Hasta</label>
+                <input type="date" id="exportDateTo" class="form-input" />
+                <small class="text-muted">Dejar vacío para incluir hasta hoy</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tipo de Reporte *</label>
+                <select id="exportReportType" class="form-select" required>
+                    <option value="movements">Movimientos de Inventario</option>
+                    <option value="stock">Stock Bajo</option>
+                    <option value="category">Por Categoría</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeExportModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="executeExport()">📄 Exportar</button>
+        </div>
+    </div>
+</div>

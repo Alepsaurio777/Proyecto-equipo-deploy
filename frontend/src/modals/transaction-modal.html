@@ -1,0 +1,38 @@
+<!-- MODAL: TRANSACCIÓN -->
+<div id="transactionModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="transactionModalTitle">Registrar Movimiento</h3>
+        </div>
+        <div class="modal-body">
+            <form id="transactionForm">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Movimiento *</label>
+                    <select id="transactionType" class="form-select" required>
+                        <option value="entrada">Entrada</option>
+                        <option value="salida">Salida</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Producto *</label>
+                    <select id="transactionProduct" class="form-select" required>
+                        <option value="">Selecciona un producto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cantidad *</label>
+                    <input type="number" id="transactionQuantity" class="form-input" min="1" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Motivo</label>
+                    <textarea id="transactionReason" class="form-textarea"
+                        placeholder="Describe el motivo del movimiento"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button id="closeTransactionModalBtn" class="btn btn-outline">Cancelar</button>
+            <button id="saveTransactionBtn" class="btn btn-primary">Guardar</button>
+        </div>
+    </div>
+</div>

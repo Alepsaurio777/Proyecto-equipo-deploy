@@ -1,0 +1,44 @@
+<div class="content-header-actions">
+    <div>
+        <h2>Gestión de Inventario</h2>
+        <p class="text-muted">Administra productos y movimientos</p>
+    </div>
+    <button class="btn btn-primary" id="newProductBtn">
+        <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Nuevo Producto
+    </button>
+</div>
+<div class="tabs">
+    <div class="tab-list">
+        <button class="tab-button active" data-tab="products">📦 Productos Activos</button>
+        <button class="tab-button" data-tab="movements">🔄 Movimientos</button>
+        <button class="tab-button" data-tab="inactive-products">🗑️ Productos Inactivos</button>
+    </div>
+    <div id="productsTab" class="tab-content active">
+        <div class="card" style="margin-bottom: 1rem;">
+            <div class="form-group" style="margin-bottom: 0; display: flex; gap: 1rem;">
+                <div style="flex: 1;">
+                    <input type="text" id="productSearch" class="form-input" placeholder="Buscar por nombre o código...">
+                </div>
+                <select id="categoryFilter" class="form-select" style="width: 200px;">
+                    <option value="">Todas las categorías</option>
+                    <!-- Las categorías se llenan dinámicamente -->
+                </select>
+            </div>
+        </div>
+        <div id="productsTableContainer"></div>
+    </div>
+    <div id="movementsTab" class="tab-content">
+         <div class="content-header-actions" style="margin-bottom: 1rem;">
+            <div></div>
+            <button class="btn btn-primary" id="newTransactionBtn">
+                 <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Registrar Movimiento
+            </button>
+        </div>
+        <div id="transactionsTableContainer"></div>
+    </div>
+    <div id="inactive-productsTab" class="tab-content">
+         <div id="inactiveProductsTableContainer"></div>
+    </div>
+</div>

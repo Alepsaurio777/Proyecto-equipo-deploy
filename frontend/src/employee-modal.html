@@ -1,0 +1,67 @@
+<div id="employeeModal" class="modal hidden">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3 id="employeeModalTitle">Nuevo Empleado</h3>
+            <button class="modal-close" id="closeEmployeeModalBtn">&times;</button>
+        </div>
+        <form id="employeeForm" class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="employeeName">Nombre Completo *</label>
+                    <input type="text" id="employeeName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="employeePosition">Puesto *</label>
+                    <select id="employeePosition" class="form-select" required>
+                        <option value="">Selecciona un rol</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="employeeUsername">Nombre de Usuario *</label>
+                    <input type="text" id="employeeUsername" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña *</label>
+                    <input type="password" id="employeePassword" class="form-input" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="employeeEmail">Email</label>
+                    <input type="email" id="employeeEmail" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="employeePhone">Teléfono</label>
+                    <input type="tel" id="employeePhone" class="form-input">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="employeeSalary">Salario</label>
+                    <input type="number" id="employeeSalary" class="form-input" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="employeeStatus">Estado</label>
+                    <select id="employeeStatus" class="form-select">
+                        <option value="active">Activo</option>
+                        <option value="inactive">Inactivo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="employeeHireDate">Fecha de Contratación</label>
+                <input type="date" id="employeeHireDate" class="form-input">
+            </div>
+            <div class="form-group">
+                <label for="employeeAddress">Dirección</label>
+                <textarea id="employeeAddress" class="form-input" rows="2"></textarea>
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="closeEmployeeModalBtn2">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="saveEmployeeBtn">Guardar</button>
+        </div>
+    </div>
+</div>
