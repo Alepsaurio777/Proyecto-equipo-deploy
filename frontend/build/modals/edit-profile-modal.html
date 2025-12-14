@@ -1,0 +1,50 @@
+<!-- MODAL: EDITAR PERFIL -->
+<div id="editProfileModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>✏️ Editar Mi Perfil</h3>
+            <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.875rem">
+                Actualiza tu información personal
+            </p>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">
+                    Nombre Completo <span style="color: var(--danger)">*</span>
+                </label>
+                <input type="text" id="profileName" class="form-input" autocomplete="name"
+                    placeholder="Ej: Juan Pérez García" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" id="profileEmail" class="form-input" autocomplete="email"
+                    placeholder="tu-email@ejemplo.com" />
+                <small class="text-muted">Para notificaciones del sistema</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Teléfono</label>
+                <input type="tel" id="profilePhone" class="form-input" autocomplete="tel"
+                    placeholder="Ej: 555-1234-5678" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Dirección</label>
+                <input type="text" id="profileAddress" class="form-input" autocomplete="street-address"
+                    placeholder="Calle, Número, Colonia, Ciudad" />
+            </div>
+            <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border);" />
+            <div style="text-align: center">
+                <button type="button" class="btn btn-outline" onclick="showChangePasswordModal()">
+                    🔒 Cambiar Contraseña
+                </button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeEditProfile()">
+                Cancelar
+            </button>
+            <button class="btn btn-primary" onclick="saveProfile()">
+                Guardar Cambios
+            </button>
+        </div>
+    </div>
+</div>

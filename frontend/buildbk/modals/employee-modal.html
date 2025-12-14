@@ -1,0 +1,79 @@
+<!-- MODAL: EMPLEADO -->
+<div id="employeeModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="employeeModalTitle">Nuevo Empleado</h3>
+        </div>
+        <div class="modal-body">
+            <form id="employeeForm">
+                <div class="form-group">
+                    <label class="form-label">Nombre Completo *</label>
+                    <input type="text" id="employeeName" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Puesto / Rol *</label>
+                    <select id="employeePosition" class="form-select" required>
+                        <option value="">Cargando roles...</option>
+                    </select>
+                    <small class="text-muted">Este campo determina los permisos del empleado</small>
+                </div>
+
+                <!-- Credenciales de Acceso -->
+                <div class="form-divider">
+                    <span>Credenciales de Acceso</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nombre de Usuario *</label>
+                    <input type="text" id="employeeUsername" class="form-input"
+                        placeholder="Ingresa el nombre de usuario" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contraseña *</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="employeePassword" class="form-input"
+                            placeholder="Mínimo 6 caracteres" minlength="6" required style="padding-right: 2.5rem" />
+                        <button type="button" class="password-toggle"
+                            onclick="togglePasswordVisibility('employeePassword')" title="Mostrar/Ocultar contraseña">
+                            <svg class="eye-icon" viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Información de Contacto -->
+                <div class="form-divider">
+                    <span>Información de Contacto</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="employeeEmail" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="tel" id="employeePhone" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Salario</label>
+                    <input type="number" id="employeeSalary" class="form-input" min="0" step="0.01" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Fecha de Contratación</label>
+                    <input type="date" id="employeeHireDate" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Dirección</label>
+                    <input type="text" id="employeeAddress" class="form-input" />
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeEmployeeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveEmployee()">Guardar</button>
+        </div>
+    </div>
+</div>

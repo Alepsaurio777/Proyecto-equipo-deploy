@@ -1,0 +1,22 @@
+<!-- MODAL: CONFIRMACIÓN DE LOGOUT -->
+<div id="logoutDialog" class="modal-overlay hidden">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3>¿Cerrar sesión?</h3>
+        </div>
+        <div class="modal-body">
+            <p>
+                ¿Estás seguro que deseas cerrar sesión? Tendrás que iniciar sesión
+                nuevamente para acceder al sistema.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeLogoutDialog()">
+                Cancelar
+            </button>
+            <button class="btn btn-danger" onclick="confirmLogout()">
+                Sí, cerrar sesión
+            </button>
+        </div>
+    </div>
+</div>

@@ -7,11 +7,10 @@ USE ferreteria_db;
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 
--- ❗ Mantener desactivadas las FK durante TODO el setup
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ================================
--- LIMPIEZA DE TABLAS
+-- LIMPIEZA
 -- ================================
 DROP TABLE IF EXISTS historial_precios;
 DROP TABLE IF EXISTS movimiento_inventario;
@@ -24,7 +23,7 @@ DROP TABLE IF EXISTS usuario;
 DROP TABLE IF EXISTS roles;
 
 -- ================================
--- TABLA ROLES
+-- 1. TABLA ROLES (CON DATOS)
 -- ================================
 CREATE TABLE roles (
     id_rol INT AUTO_INCREMENT PRIMARY KEY,
@@ -33,18 +32,19 @@ CREATE TABLE roles (
     actualizado TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Insertamos los roles básicos necesarios
 INSERT INTO roles (nombre_rol) VALUES
 ('Administrador del Sistema'),
-('Supervisor de Inventario'),
-('Encargado de Almacén');
+('Vendedor'),
+('Almacenista');
 
 -- ================================
--- TABLA USUARIO
+-- 2. TABLA USUARIO (CON DATOS)
 -- ================================
 CREATE TABLE usuario (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     usuario VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL, -- Recuerda que en producción esto debe ser un hash real (Bcrypt/Argon2)
     email VARCHAR(100),
     telefono VARCHAR(20),
     activo TINYINT(1) DEFAULT 1,
@@ -53,8 +53,13 @@ CREATE TABLE usuario (
     actualizado TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Insertamos un usuario Admin por defecto
+-- NOTA: El password aquí es un ejemplo. Si tu sistema usa hash, asegúrate de generar el hash de 'admin123'
+INSERT INTO usuario (usuario, password_hash, email, telefono) VALUES
+('admin', 'admin123', 'admin@ferreteria.com', '555-0000');
+
 -- ================================
--- TABLA EMPLEADO
+-- 3. TABLA EMPLEADO (CON DATOS)
 -- ================================
 CREATE TABLE empleado (
     id_empleado INT AUTO_INCREMENT PRIMARY KEY,
@@ -71,8 +76,12 @@ CREATE TABLE empleado (
     FOREIGN KEY (id_rol) REFERENCES roles(id_rol)
 );
 
+-- Vinculamos al usuario 'admin' con el rol 'Administrador del Sistema'
+INSERT INTO empleado (nombre_completo, id_usuario, id_rol, salario, fecha_contratacion, direccion) VALUES
+('Super Administrador', 1, 1, 0.00, CURDATE(), 'Oficina Central');
+
 -- ================================
--- TABLA CATEGORIA
+-- 4. TABLA CATEGORIA (VACÍA)
 -- ================================
 CREATE TABLE categoria (
     id_categoria INT AUTO_INCREMENT PRIMARY KEY,
@@ -82,18 +91,8 @@ CREATE TABLE categoria (
     actualizado TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-ALTER TABLE categoria AUTO_INCREMENT = 1;
-
-INSERT INTO categoria (nombre_categoria, descripcion) VALUES
-('Herramientas', 'Herramientas manuales y eléctricas'),
-('Construcción', 'Materiales de construcción'),
-('Electricidad', 'Material eléctrico y cableado'),
-('Plomería', 'Tuberías, conexiones y accesorios'),
-('Pintura', 'Pinturas, barnices y accesorios'),
-('Seguridad', 'Equipo de protección personal');
-
 -- ================================
--- TABLA PRODUCTO
+-- 5. TABLA PRODUCTO (VACÍA)
 -- ================================
 CREATE TABLE producto (
     id_producto INT AUTO_INCREMENT PRIMARY KEY,
@@ -112,19 +111,8 @@ CREATE TABLE producto (
     FOREIGN KEY (id_categoria) REFERENCES categoria(id_categoria)
 );
 
-ALTER TABLE producto AUTO_INCREMENT = 1;
-
-INSERT INTO producto 
-(codigo, nombre_producto, descripcion, precio, stock_actual, stock_minimo, stock_maximo, ubicacion, id_categoria)
-VALUES
-('MART-001', 'Martillo de Carpintero 16oz', 'Martillo profesional de carpintero', 299.99, 25, 10, 50, 'Pasillo A - Estante 2', 1),
-('CEM-001', 'Cemento Gris 50kg', 'Cemento de alta resistencia', 189.50, 45, 20, 100, 'Almacén Principal - Zona B', 2),
-('CABL-001', 'Cable Eléctrico Calibre 12', 'Cable eléctrico calibre 12 por metro', 45.00, 8, 15, 80, 'Pasillo C - Estante 1', 3),
-('PINT-001', 'Pintura Vinílica Blanca 19L', 'Pintura vinílica lavable', 459.00, 22, 10, 40, 'Almacén Secundario - Zona A', 5),
-('TUB-045', 'Tubería PVC 2\" (6m)', 'Tubería PVC de 2 pulgadas', 125.00, 15, 12, 60, 'Pasillo B - Estante 3', 4);
-
 -- ================================
--- TABLA PROVEEDOR
+-- 6. TABLA PROVEEDOR (VACÍA)
 -- ================================
 CREATE TABLE proveedor (
     id_proveedor INT AUTO_INCREMENT PRIMARY KEY,
@@ -137,7 +125,7 @@ CREATE TABLE proveedor (
 );
 
 -- ================================
--- TABLA RELACIÓN PRODUCTO - PROVEEDOR
+-- 7. TABLA RELACIÓN PRODUCTO - PROVEEDOR (VACÍA)
 -- ================================
 CREATE TABLE producto_proveedor (
     id_producto INT NOT NULL,
@@ -149,20 +137,28 @@ CREATE TABLE producto_proveedor (
 );
 
 -- ================================
--- TABLA MOVIMIENTO INVENTARIO
+-- 8. TABLA MOVIMIENTO INVENTARIO (VACÍA)
 -- ================================
 CREATE TABLE movimiento_inventario (
     id_movimiento INT AUTO_INCREMENT PRIMARY KEY,
     id_producto INT NOT NULL,
+    id_empleado INT,
     tipo_movimiento ENUM('entrada', 'salida') NOT NULL,
     cantidad INT NOT NULL,
     motivo VARCHAR(255),
+    status ENUM('pendiente', 'aprobada', 'rechazada') DEFAULT 'pendiente',
+    creado_por INT,
+    aprobado_por INT,
     fecha_movimiento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
+    fecha_aprobacion DATETIME,
+    FOREIGN KEY (id_producto) REFERENCES producto(id_producto),
+    FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado),
+    FOREIGN KEY (creado_por) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (aprobado_por) REFERENCES usuario(id_usuario)
 );
 
 -- ================================
--- TABLA HISTORIAL PRECIOS
+-- 9. TABLA HISTORIAL PRECIOS (VACÍA)
 -- ================================
 CREATE TABLE historial_precios (
     id_historial INT AUTO_INCREMENT PRIMARY KEY,
@@ -173,5 +169,23 @@ CREATE TABLE historial_precios (
     FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
 );
 
--- 🔥 Ahora sí habilitamos FK checks
+-- ================================
+-- 10. TRIGGER PARA HISTORIAL DE PRECIOS
+-- ================================
+DELIMITER //
+
+CREATE TRIGGER after_producto_update
+AFTER UPDATE ON producto
+FOR EACH ROW
+BEGIN
+    -- Solo insertamos si el precio ha cambiado
+    IF OLD.precio <> NEW.precio THEN
+        INSERT INTO historial_precios (id_producto, precio_anterior, precio_nuevo, fecha_cambio)
+        VALUES (OLD.id_producto, OLD.precio, NEW.precio, NOW());
+    END IF;
+END//
+
+DELIMITER ;
+
+-- Reactivar FK checks
 SET FOREIGN_KEY_CHECKS = 1;

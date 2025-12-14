@@ -13,6 +13,7 @@ async function handleLogin(e) {
       employeeId: data.data.user.employee_id,
       username: data.data.user.username,
       role: data.data.user.role,
+      roleId: data.data.user.role_id,
       fullName: data.data.user.full_name,
       email: data.data.user.email || "",
       phone: data.data.user.phone || "",
@@ -32,6 +33,13 @@ async function showMainApp() {
   document.getElementById("mainApp").classList.remove("hidden");
 
   await apiLoadCategories();
+
+  // Cargar permisos de acción para el usuario actual
+  await loadActionPermissionsForCurrentUser();
+
+  // Iniciar polling de permisos (verifica cambios cada 30 segundos)
+  startPermissionPolling();
+
   updateUserInfo();
   renderSidebar();
   loadModule(AppState.currentModule);
@@ -80,18 +88,88 @@ function confirmLogout() {
 
 // Mostrar modal de recuperación de contraseña
 function showPasswordRecovery() {
-  AppState.recoveryStep = "email";
-  AppState.recoveryUserId = null;
-  AppState.recoveryUsername = null;
-  document.getElementById("passwordRecoveryModal").classList.remove("hidden");
-  document.getElementById("pinStep").classList.add("hidden");
-  document.getElementById("emailCodeStep").classList.remove("hidden");
-  document.getElementById("verifyCodeStep").classList.add("hidden");
-  document.getElementById("passwordStep").classList.add("hidden");
-  document.getElementById("recoveryActionBtn").textContent = "Enviar Código";
-  document.getElementById("adminPin").value = "";
-  document.getElementById("recoveryEmailUsername").value = "";
-  document.getElementById("verificationCode").value = "";
+  console.log('🔍 Abriendo modal de recuperación...');
+
+  // Esperar a que el modal esté cargado en el DOM
+  setTimeout(() => {
+    const modal = document.getElementById("passwordRecoveryModal");
+
+    if (!modal) {
+      console.error('❌ Modal no encontrado');
+      showToast('Error al abrir el modal', 'error');
+      return;
+    }
+
+    console.log('✅ Modal encontrado');
+
+    // Resetear estado
+    AppState.recoveryStep = "email";
+    AppState.recoveryUserId = null;
+    AppState.recoveryUsername = null;
+
+    // Mostrar modal
+    modal.classList.remove("hidden");
+
+    // Mostrar solo el primer paso (email)
+    const emailStep = document.getElementById("emailCodeStep");
+    const pinStep = document.getElementById("pinStep");
+    const verifyStep = document.getElementById("verifyCodeStep");
+    const passwordStep = document.getElementById("passwordStep");
+
+    if (pinStep) pinStep.classList.add("hidden");
+    if (emailStep) emailStep.classList.remove("hidden");
+    if (verifyStep) verifyStep.classList.add("hidden");
+    if (passwordStep) passwordStep.classList.add("hidden");
+
+    // ✅ CONFIGURAR BOTÓN CON addEventListener
+    const btn = document.getElementById("recoveryActionBtn");
+    if (btn) {
+      btn.textContent = "Enviar Código";
+      btn.disabled = false;
+
+      // Remover listeners anteriores clonando el botón
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+
+      // Agregar nuevo listener
+      newBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🎯 Click detectado en botón');
+        handleRecoveryAction();
+      });
+
+      console.log('✅ Event listener agregado al botón');
+    } else {
+      console.error('❌ Botón recoveryActionBtn no encontrado');
+    }
+
+    // Limpiar campos
+    const adminPin = document.getElementById("adminPin");
+    const usernameInput = document.getElementById("recoveryEmailUsername");
+    const codeInput = document.getElementById("verificationCode");
+    const emailHint = document.getElementById("emailHint");
+    const recoveryUsername = document.getElementById("recoveryUsername");
+    const newPassword = document.getElementById("newPassword");
+    const confirmPassword = document.getElementById("confirmPassword");
+
+    if (adminPin) adminPin.value = "";
+    if (usernameInput) usernameInput.value = "";
+    if (codeInput) codeInput.value = "";
+    if (emailHint) emailHint.value = "";
+    if (recoveryUsername) recoveryUsername.value = "";
+    if (newPassword) newPassword.value = "";
+    if (confirmPassword) confirmPassword.value = "";
+
+    // Focus en el input de usuario
+    setTimeout(() => {
+      if (usernameInput) {
+        usernameInput.focus();
+        console.log('✅ Focus en input');
+      }
+    }, 100);
+
+  }, 100);
 }
 
 // Cerrar modal de recuperación
@@ -158,7 +236,10 @@ async function validateAdminPin() {
 
 // Paso 2: Enviar código de verificación por email
 async function sendVerificationEmail() {
+  console.log('📧 sendVerificationEmail() ejecutándose...');
+
   const username = document.getElementById("recoveryEmailUsername").value;
+  console.log('👤 Username:', username);
 
   if (!username) {
     showToast("Por favor ingresa tu nombre de usuario", "error");
@@ -187,37 +268,52 @@ async function sendVerificationEmail() {
   btn.disabled = true;
   btn.textContent = "Enviando...";
 
+  console.log('📡 Llamando a apiSendVerificationCode...');
+
   // Llamar al API para enviar código
   const result = await apiSendVerificationCode(username);
+
+  console.log('📬 Resultado recibido:', result);
 
   btn.disabled = false;
 
   if (result.success) {
+    console.log('✅ Código enviado exitosamente');
+
     // Guardar timestamp del último código enviado
     AppState.recoveryCodeCooldown = Date.now();
     AppState.recoveryUsername = username;
 
     // Mostrar email enmascarado
-    document.getElementById("emailHint").value =
-      result.data.email_hint || "tu email registrado";
+    const emailHintValue = result.data?.email_hint || "tu email registrado";
+    document.getElementById("emailHint").value = emailHintValue;
+    console.log('📧 Email hint:', emailHintValue);
 
     // Pasar al paso 2 (verificar código)
     document.getElementById("emailCodeStep").classList.add("hidden");
     document.getElementById("verifyCodeStep").classList.remove("hidden");
-    document.getElementById("recoveryActionBtn").textContent =
-      "Verificar Código";
+
+    // ✅ ACTUALIZAR BOTÓN CON NUEVO LISTENER
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+
+    newBtn.textContent = "Verificar Código";
+    newBtn.disabled = false;
+    newBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('🎯 Click en Verificar Código');
+      handleRecoveryAction();
+    });
+
     AppState.recoveryStep = "verify";
 
     // MODO DESARROLLO: Mostrar código en la interfaz para testing
-    if (result.data.debug_code) {
+    if (result.data?.debug_code) {
       showToast(
         `✅ Código generado: ${result.data.debug_code} (válido por ${result.data.expires_in_minutes} minutos)`,
         "success"
       );
-
-      // Prellenar el campo con el código para facilitar testing
-      //document.getElementById("verificationCode").value =
-      result.data.debug_code;
     } else {
       showToast(
         "Código enviado a tu email. Revisa tu bandeja de entrada.",
@@ -225,6 +321,7 @@ async function sendVerificationEmail() {
       );
     }
   } else {
+    console.error('❌ Error al enviar código:', result.message);
     btn.textContent = "Enviar Código";
     showToast(result.message || "Error al enviar código", "error");
   }
@@ -278,7 +375,10 @@ async function resendVerificationCode() {
 
 // Paso 2: Verificar código enviado por email
 async function verifyEmailCode() {
+  console.log('🔍 verifyEmailCode() ejecutándose...');
+
   const code = document.getElementById("verificationCode").value;
+  console.log('🔢 Código ingresado:', code);
 
   if (!code || code.length !== 6) {
     showToast("Por favor ingresa el código de 6 dígitos", "error");
@@ -291,23 +391,41 @@ async function verifyEmailCode() {
   const originalText = btn.textContent;
   btn.textContent = "Verificando...";
 
+  console.log('📡 Llamando a apiVerifyEmailCode...');
+
   // Llamar al API para verificar código
   const result = await apiVerifyEmailCode(AppState.recoveryUsername, code);
+
+  console.log('📬 Resultado de verificación:', result);
 
   btn.disabled = false;
 
   if (result.success) {
+    console.log('✅ Código verificado correctamente');
+
     // Código correcto, pasar al paso 3 (cambiar contraseña)
     AppState.recoveryUserId = result.data.user_id;
     document.getElementById("verifyCodeStep").classList.add("hidden");
     document.getElementById("passwordStep").classList.remove("hidden");
-    document.getElementById("recoveryUsername").value =
-      AppState.recoveryUsername;
-    document.getElementById("recoveryActionBtn").textContent =
-      "Cambiar Contraseña";
+    document.getElementById("recoveryUsername").value = AppState.recoveryUsername;
+
+    // ✅ ACTUALIZAR BOTÓN CON NUEVO LISTENER
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+
+    newBtn.textContent = "Cambiar Contraseña";
+    newBtn.disabled = false;
+    newBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('🎯 Click en Cambiar Contraseña');
+      handleRecoveryAction();
+    });
+
     AppState.recoveryStep = "password";
     showToast("Código verificado correctamente", "success");
   } else {
+    console.error('❌ Error al verificar código:', result.message);
     btn.textContent = originalText;
     showToast(result.message || "Código incorrecto o expirado", "error");
   }
