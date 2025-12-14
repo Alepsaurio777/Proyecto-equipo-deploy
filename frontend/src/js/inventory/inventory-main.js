@@ -3,6 +3,9 @@
  * Inicialización y gestión de eventos.
  */
 
+// Flag para evitar registrar event listeners duplicados
+let inventoryDelegationListenerAdded = false;
+
 function setupInventoryListeners() {
     const newProductBtn = document.getElementById("newProductBtn");
     if (newProductBtn) newProductBtn.onclick = () => showProductModal();
@@ -17,12 +20,15 @@ function setupInventoryListeners() {
     const closeProductModalBtn = document.getElementById("closeProductModalBtn");
     if (closeProductModalBtn) closeProductModalBtn.onclick = closeProductModal;
 
-    // Fallback: Delegación de eventos para el modal si no existe al cargar
-    document.addEventListener("click", (e) => {
-        if (e.target && e.target.id === "closeProductModalBtn") closeProductModal();
-        if (e.target && e.target.id === "closeProductModalBtn2") closeProductModal();
-        if (e.target && e.target.id === "closeTransactionModalBtn") closeTransactionModal();
-    });
+    // Fallback: Delegación de eventos para el modal (solo registrar una vez)
+    if (!inventoryDelegationListenerAdded) {
+        inventoryDelegationListenerAdded = true;
+        document.addEventListener("click", (e) => {
+            if (e.target && e.target.id === "closeProductModalBtn") closeProductModal();
+            if (e.target && e.target.id === "closeProductModalBtn2") closeProductModal();
+            if (e.target && e.target.id === "closeTransactionModalBtn") closeTransactionModal();
+        });
+    }
 
     const saveProductBtn = document.getElementById("saveProductBtn");
     if (saveProductBtn) saveProductBtn.onclick = saveProduct;
@@ -42,6 +48,32 @@ function setupInventoryListeners() {
             });
         };
     }
+
+    // Listeners para filtros de movimientos
+    const transactionSearch = document.getElementById("transactionSearch");
+    if (transactionSearch) transactionSearch.oninput = filterTransactions;
+
+    const transactionTypeFilter = document.getElementById("transactionTypeFilter");
+    if (transactionTypeFilter) transactionTypeFilter.onchange = filterTransactions;
+
+    const transactionStatusFilter = document.getElementById("transactionStatusFilter");
+    if (transactionStatusFilter) transactionStatusFilter.onchange = filterTransactions;
+}
+
+// Variables de filtro para movimientos
+let transactionSearchTerm = "";
+let transactionTypeFilterValue = "";
+let transactionStatusFilterValue = "";
+
+function filterTransactions() {
+    const searchInput = document.getElementById("transactionSearch");
+    const typeSelect = document.getElementById("transactionTypeFilter");
+    const statusSelect = document.getElementById("transactionStatusFilter");
+
+    transactionSearchTerm = searchInput ? searchInput.value : "";
+    transactionTypeFilterValue = typeSelect ? typeSelect.value : "";
+    transactionStatusFilterValue = statusSelect ? statusSelect.value : "";
+    renderTransactionsTable();
 }
 
 function filterInventory() {

@@ -217,7 +217,7 @@ async function loadActionPermissionsForCurrentUser() {
 // ==================== POLLING DE PERMISOS ====================
 
 // Intervalo de polling (en milisegundos)
-const PERMISSION_POLL_INTERVAL = 30000; // 30 segundos
+const PERMISSION_POLL_INTERVAL = 5000; // 5 segundos
 let permissionPollingId = null;
 
 /**

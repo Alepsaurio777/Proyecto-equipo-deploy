@@ -38,6 +38,16 @@ function getTransactions(filters = {}) {
         filtered = filtered.filter((t) => t.type === filters.type);
     }
 
+    // Filtro por término de búsqueda (producto o usuario)
+    if (filters.searchTerm && filters.searchTerm !== "") {
+        const term = filters.searchTerm.toLowerCase();
+        filtered = filtered.filter((t) =>
+            (t.product_name && t.product_name.toLowerCase().includes(term)) ||
+            (t.product_code && t.product_code.toLowerCase().includes(term)) ||
+            (t.created_by_name && t.created_by_name.toLowerCase().includes(term))
+        );
+    }
+
     return filtered.sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
     );

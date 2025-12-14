@@ -103,14 +103,29 @@ function renderInventoryModule() {
                   <div id="productsTableContainer"></div>
               </div>
               <div id="movementsTab" class="tab-content">
-                   <div class="content-header-actions" style="margin-bottom: 1rem;">
-                      <div></div>
-                      <button class="btn btn-primary" id="newTransactionBtn">
-                           <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                          Registrar Movimiento
-                      </button>
-                  </div>
-                  <div id="transactionsTableContainer"></div>
+                   <div class="card" style="margin-bottom: 1rem;">
+                       <div class="form-group" style="margin-bottom: 0; display: flex; gap: 1rem; align-items: center;">
+                           <div style="flex: 1;">
+                               <input type="text" id="transactionSearch" class="form-input" placeholder="Buscar por producto o usuario...">
+                           </div>
+                           <select id="transactionTypeFilter" class="form-select" style="width: 150px;">
+                               <option value="">Todos los tipos</option>
+                               <option value="entrada">Entrada</option>
+                               <option value="salida">Salida</option>
+                           </select>
+                           <select id="transactionStatusFilter" class="form-select" style="width: 150px;">
+                               <option value="">Todos los estados</option>
+                               <option value="pendiente">Pendiente</option>
+                               <option value="aprobada">Aprobada</option>
+                               <option value="rechazada">Rechazada</option>
+                           </select>
+                           <button class="btn btn-primary" id="newTransactionBtn">
+                               <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                               Registrar Movimiento
+                           </button>
+                       </div>
+                   </div>
+                   <div id="transactionsTableContainer"></div>
               </div>
   
           </div>
@@ -125,6 +140,19 @@ function renderInventoryModule() {
 
 function renderProductsTable() {
     const container = document.getElementById("productsTableContainer");
+
+    // Verificar permiso de consultar productos
+    if (!hasActionPermission('products.view')) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🚫</div>
+                <p>No tienes permiso para consultar productos</p>
+                <p class="text-muted" style="font-size: 0.875rem;">Contacta al administrador si necesitas acceso</p>
+            </div>
+        `;
+        return;
+    }
+
     const products = getProducts({
         searchTerm: inventorySearchTerm,
         category: inventoryFilterCategory,
@@ -184,11 +212,15 @@ function renderProductsTable() {
 
 function renderTransactionsTable() {
     const container = document.getElementById("transactionsTableContainer");
-    const transactions = getTransactions();
+    const transactions = getTransactions({
+        searchTerm: transactionSearchTerm,
+        type: transactionTypeFilterValue,
+        status: transactionStatusFilterValue
+    });
 
     if (transactions.length === 0) {
         container.innerHTML =
-            '<div class="empty-state"><div class="empty-state-icon">🔄</div><p>No hay movimientos registrados</p></div>';
+            '<div class="empty-state"><div class="empty-state-icon">🔄</div><p>No se encontraron movimientos</p></div>';
         return;
     }
 
