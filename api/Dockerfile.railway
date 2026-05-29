@@ -3,8 +3,7 @@ FROM php:8.2-apache
 RUN apt-get update \
     && apt-get install -y git unzip libzip-dev libpng-dev libjpeg-dev zip unzip \
     && docker-php-ext-install mysqli pdo pdo_mysql gd \
-    && a2dismod mpm_event mpm_worker \
-    && a2enmod rewrite mpm_prefork
+    && a2enmod rewrite
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
