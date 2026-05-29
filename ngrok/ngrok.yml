@@ -1,0 +1,16 @@
+version: 3
+
+# ngrok configuration for local development
+# Note: ensure you've run `ngrok authtoken <YOUR_TOKEN>` once on the host
+# before starting, or add your token below (not recommended in plaintext).
+
+# Tunnels
+tunnels:
+  frontend:
+    proto: http
+    addr: 80
+
+# Optional: add authtoken here because using --config ignores the default
+# ~/.config/ngrok/ngrok.yml where your token is stored.
+agent:
+  authtoken: 36ha8fqe1S8Z8TtmKc9RsFm9e68_2fzLq4KFQ81UdBJ9Cb9KY

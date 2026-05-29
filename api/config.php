@@ -18,11 +18,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// ==================== CREDENCIALES INFINITYFREE ====================
-define('DB_HOST', 'sql100.infinityfree.com');
-define('DB_USER', 'if0_40600490');
-define('DB_PASS', 'mJxilY7IH0GYZ');
-define('DB_NAME', 'if0_40600490_ferreteria_db');
+// ==================== CREDENCIALES ====================
+// Priorizar variables de entorno (útil para Docker). Si no existen,
+// detectar si estamos en un contenedor Docker y usar valores locales.
+if (getenv('DB_HOST') && getenv('DB_USER') && getenv('DB_PASS') && getenv('DB_NAME')) {
+    define('DB_HOST', getenv('DB_HOST'));
+    define('DB_USER', getenv('DB_USER'));
+    define('DB_PASS', getenv('DB_PASS'));
+    define('DB_NAME', getenv('DB_NAME'));
+} elseif (file_exists('/.dockerenv')) {
+    // Valores por defecto para el entorno Docker Compose (servicio `db`)
+    define('DB_HOST', 'db');
+    define('DB_USER', 'root');
+    define('DB_PASS', 'root');
+    define('DB_NAME', 'ferreteria_db');
+} else {
+    // Valores por defecto públicos (InfinityFree)
+    define('DB_HOST', 'sql100.infinityfree.com');
+    define('DB_USER', 'if0_40600490');
+    define('DB_PASS', 'mJxilY7IH0GYZ');
+    define('DB_NAME', 'if0_40600490_ferreteria_db');
+}
 
 // ==================== CONEXIÓN A LA BASE DE DATOS ====================
 function getConnection()

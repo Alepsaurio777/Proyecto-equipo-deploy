@@ -1,9 +1,15 @@
 // ==================== MÓDULO DE API CENTRALIZADO ====================
 // Centraliza todas las llamadas a la API del backend
 
-// Proxy CORS para evitar bloqueo de InfinityFree
-const API_BASE_URL =
-  "https://corsproxy.io/?https://ferreteria-itvo.infinityfreeapp.com/endpoints";
+// Base URL del API
+// - En local (localhost) usa el backend directo
+// - En remoto (ngrok/producción) usa el proxy /api del nginx
+const isLocalhost =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+const API_BASE_URL = isLocalhost
+  ? "http://localhost:8080"
+  : `${window.location.origin}/api`;
 
 // ==================== PRODUCTOS ====================
 async function apiLoadProducts(status = "active") {

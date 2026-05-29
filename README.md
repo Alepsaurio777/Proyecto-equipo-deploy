@@ -239,6 +239,66 @@ Abre tu navegador en: **[http://localhost:3000](http://localhost:3000)**
 
 ---
 
+## 🐳 Uso con Docker (opción recomendada para Linux)
+
+Si prefieres levantar todo en contenedores (BD, API y frontend), hay un helper que automatiza la mayoría de pasos.
+
+- **Requisitos previos:** instala Docker Engine (o Docker Desktop) y asegúrate de que el daemon esté corriendo. En Linux también necesitas `docker compose` (v2 integrado o plugin). El script es un `bash` por lo que en Windows usa WSL2 o Docker Desktop.
+- **¿Necesito Node/Composer/PHP localmente?** No necesariamente: el flujo con Docker instala dependencias dentro de los contenedores. Si quieres desarrollar fuera de Docker, sigue las instrucciones anteriores.
+
+### Script helper
+
+Hay un script para Linux que construye y levanta los contenedores automáticamente: `scripts/docker-dev.sh`.
+
+Ejecutarlo (desde la raíz del proyecto):
+
+```bash
+chmod +x scripts/docker-dev.sh
+./scripts/docker-dev.sh
+```
+
+Qué hace el script:
+- Copia `.env.example` a `.env` si no existe.
+- Construye las imágenes y levanta los servicios definidas en `docker-compose.yml` (MySQL, API PHP/Apache y frontend Node/Vite).
+- Monta el SQL de inicialización `api/database2.sql` para poblar la base de datos al primer arranque.
+
+Puertos por defecto expuestos por los contenedores:
+- Frontend (Vite): `http://localhost:3000`
+- API (Apache/PHP): `http://localhost:8080` (endpoints en `api/*.php`)
+- MySQL: `3306` (root/root según `docker-compose.yml`)
+
+Parar y borrar contenedores (desde la raíz):
+
+```bash
+docker compose down -v
+```
+
+Ver logs en tiempo real:
+
+```bash
+docker compose logs -f
+```
+
+Si trabajas en Windows sin WSL, instala Docker Desktop y ejecuta los mismos comandos desde PowerShell (el script `scripts/docker-dev.sh` es bash; ejecuta los comandos manualmente si no tienes bash).
+ 
+### Despliegue para producción (local / VPS)
+
+Se incluyen artefactos para construir una imagen optimizada del frontend (`frontend/Dockerfile`) que genera la build y la sirve con `nginx`.
+
+Comandos útiles con `make` (desde la raíz del proyecto):
+
+```bash
+make build-prod    # Construye las imágenes productivas (frontend + api)
+make prod-up       # Levanta db + api + frontend_prod + phpmyadmin en background
+make prod-down     # Para y borra los contenedores y volúmenes
+```
+
+Notas importantes para producción:
+- Rellenar `.env` con credenciales reales y seguras (no subir a git).
+- Configurar volúmenes/backups para la base de datos.
+- Cambiar `MYSQL_ROOT_PASSWORD` en `docker-compose.yml` por un secreto seguro o usar un secret manager.
+
+
 ## 🏗️ Estructura del Proyecto
 
 ```
