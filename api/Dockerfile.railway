@@ -1,0 +1,24 @@
+FROM php:8.2-apache
+
+RUN apt-get update \
+    && apt-get install -y git unzip libzip-dev libpng-dev libjpeg-dev zip unzip \
+    && docker-php-ext-install mysqli pdo pdo_mysql gd \
+    && a2dismod mpm_event mpm_worker \
+    && a2enmod rewrite mpm_prefork
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+COPY api/ /var/www/html/
+
+RUN if [ -f composer.json ]; then composer install --no-interaction --optimize-autoloader || true; fi
+
+RUN chown -R www-data:www-data /var/www/html
+
+COPY api/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
+EXPOSE 80
+
+CMD ["/usr/local/bin/start.sh"]
